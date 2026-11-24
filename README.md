@@ -56,7 +56,7 @@ Included:
 - Manual transaction classification overrides.
 - Searchable, sortable merchant management with persistent merchant-level category assignments.
 - One-time / limited-expense candidates based on merchant frequency and configurable thresholds.
-- Pre-salary savings estimate using balances entered by the user, days to salary, recent 90-day spending, known payments and a minimum reserve.
+- Historical 26th–25th salary-cycle reconstruction from imported EUR running balances, with savings potential, actual cash balance movement, recognised investment contributions and annual comparisons.\n- Pre-salary savings estimate using balances entered by the user, days to salary, recent 90-day spending, known payments and a minimum reserve.
 
 Not yet included:
 - Automatic bank balance retrieval or Revolut API integration.
@@ -73,7 +73,7 @@ Not yet included:
 This is a decision-support tool, not accounting or tax software. Imported data can be incomplete, bank descriptions can be ambiguous, and automatic classifications are suggestions. Confirm review items and check the date coverage before acting on a result.
 
 
-## Recent interface improvements
+## Stage 3 · historical savings reconstruction\n\n- Salary cycles run from the 26th through the 25th and are grouped into the year in which the cycle ends.\n- Opening balances use the latest imported EUR Balance snapshot before the 26th; closing balances use the latest snapshot on or before the 25th. Snapshots are grouped by account and Revolut Product.\n- A cycle is marked complete only when every EUR balance stream active by the cycle end has both an opening and a closing snapshot. Incomplete cycles still show classified savings potential, but are excluded from cash-retention totals.\n- Savings potential is classified income less net expenses. Actual cash retained is the change in reconstructed household EUR balances. Cash + invested adds recognised net investment transfers; it is a contribution measure, not a valuation of investment holdings or returns.\n- Non-EUR balances are excluded because the export does not provide a consistent conversion basis in this dashboard.\n- The local app does not upload account balances or transaction data.\n\n## Recent interface improvements
 
 - The overview places automatic insights first, followed by household filters, financial overview, data import and the application introduction.
 - Comparison columns can be sorted by category or value. Change versus last year shows the euro difference and percentage separately.
