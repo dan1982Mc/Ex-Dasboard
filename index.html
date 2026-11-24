@@ -21,16 +21,64 @@
   </header>
 
   <main class="shell">
-    <section class="welcome panel" id="welcomePanel">
-      <div class="welcome-copy">
-        <div class="eyebrow">HOUSEHOLD FINANCE ANALYSIS</div>
-        <h1>Understand where your money goes.</h1>
-        <p>Import the Revolut statements for Dan and Anca. Transactions stay in this browser; the dashboard does not send them to a server.</p>
-      </div>
-      <div class="welcome-stat"><strong>2023–2026</strong><span>Historical comparison</span></div>
-    </section>
 
-    <section class="import-panel panel" id="importPanel">
+
+
+
+    <section id="workspace">
+
+        <article id="automaticInsightsPanel" class="panel insight-panel home-section">
+          <div class="section-heading"><div><div class="eyebrow">AUTOMATIC INSIGHTS</div><h2>Automatic insights</h2></div><span class="muted small">Based on imported completed transactions</span></div>
+          <div id="insights" class="insight-grid"><div class="empty-state">Insights appear after importing transactions.</div></div>
+        </article>
+
+      <div class="workspace-head home-section" id="householdHeader">
+        <div><div class="eyebrow">YOUR HOUSEHOLD</div><h1>Financial overview</h1><p id="dataStatus" class="muted">No transactions imported yet.</p></div>
+        <div class="head-filters">
+          <label>Account<select id="accountFilter"><option value="all">Household · both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
+          <label>Period<input type="month" id="periodFilter"></label>
+        </div>
+      </div>
+
+      <nav class="tabs"
+ aria-label="Dashboard sections">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="compare">Comparisons</button>
+        <button class="tab" data-tab="projects">Projects & incidental</button>
+        <button class="tab" data-tab="rules">Rules</button>
+        <button class="tab" data-tab="transactions">Transactions <span id="reviewBadge" class="tab-badge">0</span></button>
+        <button class="tab" data-tab="forecast">Savings forecast</button>
+      </nav>
+
+      <section class="page active home-section" id="page-overview">
+        <div class="kpi-grid">
+          <article class="kpi-card"><span>Income this period</span><strong id="kpiIncome">€0</strong><small id="kpiIncomeSub">Completed income transactions</small></article>
+          <article class="kpi-card"><span>Net expenses</span><strong id="kpiExpenses">€0</strong><small id="kpiExpensesSub">Expenses less refunds</small></article>
+          <article class="kpi-card"><span>Investments</span><strong id="kpiInvestments">€0</strong><small>Shown separately from consumption</small></article>
+          <article class="kpi-card accent"><span>Cash flow after expenses</span><strong id="kpiNet">€0</strong><small>Income less expenses and investments</small></article>
+        </div>
+        <div class="content-grid">
+          <article class="panel wide">
+            <div class="section-heading"><div><div class="eyebrow">WHAT CHANGED?</div><h2>Category comparison</h2></div><select id="overviewMetric"><option value="expense">Expenses</option><option value="income">Income</option></select></div>
+            <p class="muted" id="overviewPeriodNote">Compared with the same period last year and the historical average.</p>
+            <div id="overviewComparison" class="comparison-list empty-state">Import statements to see category comparisons.</div>
+            <button class="text-button" data-goto="compare">Open full comparison →</button>
+          </article>
+          <article class="panel">
+            <div class="eyebrow">ATTENTION</div><h2>What needs review?</h2>
+            <div class="review-summary">
+              <div><strong id="reviewCount">0</strong><span>Unclassified transfers</span></div>
+              <div><strong id="incidentalCount">0</strong><span>Incidental candidates</span></div>
+              <div><strong id="pendingCount">0</strong><span>Pending / reverted rows</span></div>
+            </div>
+            <div id="attentionNotes" class="attention-notes"></div>
+            <button class="text-button" data-goto="transactions">Review transactions →</button>
+          </article>
+        </div>
+
+      </section>
+
+    <section class="import-panel panel home-section" id="importPanel">
       <div class="section-heading">
         <div><div class="eyebrow">DATA IMPORT</div><h2>Load your Revolut statements</h2></div>
         <button class="icon-button" id="closeImportBtn" aria-label="Close import panel">×</button>
@@ -57,54 +105,14 @@
       <div class="import-note"><strong>Privacy:</strong> imported transactions are stored in this browser's IndexedDB. They are not uploaded to GitHub or transmitted by this application. Use Backup to export a private copy.</div>
     </section>
 
-    <section id="workspace" hidden>
-      <div class="workspace-head">
-        <div><div class="eyebrow">YOUR HOUSEHOLD</div><h1>Financial overview</h1><p id="dataStatus" class="muted">No transactions imported yet.</p></div>
-        <div class="head-filters">
-          <label>Account<select id="accountFilter"><option value="all">Household · both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
-          <label>Period<input type="month" id="periodFilter"></label>
-        </div>
+    <section class="welcome panel home-section" id="welcomePanel">
+      <div class="welcome-copy">
+        <div class="eyebrow">HOUSEHOLD FINANCE ANALYSIS</div>
+        <h1>Understand where your money goes.</h1>
+        <p>Import the Revolut statements for Dan and Anca. Transactions stay in this browser; the dashboard does not send them to a server.</p>
       </div>
-
-      <nav class="tabs" aria-label="Dashboard sections">
-        <button class="tab active" data-tab="overview">Overview</button>
-        <button class="tab" data-tab="compare">Comparisons</button>
-        <button class="tab" data-tab="projects">Projects & incidental</button>
-        <button class="tab" data-tab="rules">Rules</button>
-        <button class="tab" data-tab="transactions">Transactions <span id="reviewBadge" class="tab-badge">0</span></button>
-        <button class="tab" data-tab="forecast">Savings forecast</button>
-      </nav>
-
-      <section class="page active" id="page-overview">
-        <div class="kpi-grid">
-          <article class="kpi-card"><span>Income this period</span><strong id="kpiIncome">€0</strong><small id="kpiIncomeSub">Completed income transactions</small></article>
-          <article class="kpi-card"><span>Net expenses</span><strong id="kpiExpenses">€0</strong><small id="kpiExpensesSub">Expenses less refunds</small></article>
-          <article class="kpi-card"><span>Investments</span><strong id="kpiInvestments">€0</strong><small>Shown separately from consumption</small></article>
-          <article class="kpi-card accent"><span>Cash flow after expenses</span><strong id="kpiNet">€0</strong><small>Income less expenses and investments</small></article>
-        </div>
-        <div class="content-grid">
-          <article class="panel wide">
-            <div class="section-heading"><div><div class="eyebrow">WHAT CHANGED?</div><h2>Category comparison</h2></div><select id="overviewMetric"><option value="expense">Expenses</option><option value="income">Income</option></select></div>
-            <p class="muted" id="overviewPeriodNote">Compared with the same period last year and the historical average.</p>
-            <div id="overviewComparison" class="comparison-list empty-state">Import statements to see category comparisons.</div>
-            <button class="text-button" data-goto="compare">Open full comparison →</button>
-          </article>
-          <article class="panel">
-            <div class="eyebrow">ATTENTION</div><h2>What needs review?</h2>
-            <div class="review-summary">
-              <div><strong id="reviewCount">0</strong><span>Unclassified transfers</span></div>
-              <div><strong id="incidentalCount">0</strong><span>Incidental candidates</span></div>
-              <div><strong id="pendingCount">0</strong><span>Pending / reverted rows</span></div>
-            </div>
-            <div id="attentionNotes" class="attention-notes"></div>
-            <button class="text-button" data-goto="transactions">Review transactions →</button>
-          </article>
-        </div>
-        <article class="panel insight-panel">
-          <div class="section-heading"><div><div class="eyebrow">AUTOMATIC INSIGHTS</div><h2>Things worth noticing</h2></div><span class="muted small">Based on imported completed transactions</span></div>
-          <div id="insights" class="insight-grid"><div class="empty-state">Insights appear after importing transactions.</div></div>
-        </article>
-      </section>
+      <div class="welcome-stat"><strong>2023–2026</strong><span>Historical comparison</span></div>
+    </section>
 
       <section class="page" id="page-compare">
         <div class="page-intro"><div><div class="eyebrow">HISTORICAL ANALYSIS</div><h2>Compare like with like</h2><p class="muted">The selected month is compared with the same calendar month in the previous year and the average of available earlier years. An incomplete latest month uses the same day-of-month cutoff for every year.</p></div>
@@ -158,6 +166,26 @@
           </form>
         </article>
         <article class="panel"><div class="section-heading"><div><div class="eyebrow">YOUR RULES</div><h2>Active classification rules</h2></div><span class="muted small" id="ruleCount">0 rules</span></div><div id="rulesList" class="rules-list"><div class="empty-state">No custom rules yet.</div></div></article>
+        <article class="panel merchant-panel">
+          <div class="section-heading">
+            <div><div class="eyebrow">MERCHANT CLASSIFICATION</div><h2>Merchant management</h2><p class="muted small">Change a merchant's category once to apply it to historical transactions and future imports. Totals are net of refunds.</p></div>
+            <span id="merchantCount" class="muted small">0 merchants</span>
+          </div>
+          <div class="merchant-toolbar">
+            <label class="search-field">Search merchants<input type="search" id="merchantSearch" placeholder="Merchant name or account"></label>
+            <label>Category<select id="merchantCategoryFilter"><option value="all">All categories</option></select></label>
+            <label>Period<select id="merchantPeriodFilter"><option value="all">All history</option><option value="selected">Selected month</option></select></label>
+          </div>
+          <div class="table-wrap"><table id="merchantTable" class="comparison-table merchant-table">
+            <thead><tr>
+              <th><button type="button" class="sort-header" data-sort-merchant="merchant">Merchant <span class="sort-indicator">↕</span></button></th>
+              <th><button type="button" class="sort-header" data-sort-merchant="category">Category <span class="sort-indicator">↕</span></button></th>
+              <th class="num"><button type="button" class="sort-header" data-sort-merchant="count">Transactions <span class="sort-indicator">↕</span></button></th>
+              <th class="num"><button type="button" class="sort-header" data-sort-merchant="spent">Total spent <span class="sort-indicator">▼</span></button></th>
+            </tr></thead>
+            <tbody id="merchantRows"><tr><td colspan="4" class="empty-state">Import transactions to build the merchant list.</td></tr></tbody>
+          </table></div>
+        </article>
         <datalist id="categoryOptions"></datalist>
       </section>
 
