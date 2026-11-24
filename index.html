@@ -36,7 +36,7 @@
         <div><div class="eyebrow">YOUR HOUSEHOLD</div><h1>Financial overview</h1><p id="dataStatus" class="muted">No transactions imported yet.</p></div>
         <div class="head-filters">
           <label>Account<select id="accountFilter"><option value="all">Household · both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
-          <label>Period<input type="month" id="periodFilter"></label>
+          <div class="period-picker"><span class="filter-caption">Period</span><div class="period-presets"><button type="button" class="period-button" data-period-preset="this-month">This month</button><button type="button" class="period-button" data-period-preset="previous-month">Previous month</button><button type="button" class="period-button" data-period-preset="same-month-last-year">Same month last year</button><button type="button" class="period-button" data-period-preset="custom">Custom</button></div><div class="period-custom-range" id="periodCustomRange" hidden><label>From<input type="date" id="periodStart"></label><label>To<input type="date" id="periodEnd"></label><button type="button" class="button button-primary" id="applyCustomPeriod">Apply</button></div><span class="period-label" id="periodLabel">—</span><input type="month" id="periodFilter" hidden></div>
         </div>
       </div>
 
@@ -147,7 +147,7 @@
       <section class="page" id="page-rules">
         <div class="page-intro"><div><div class="eyebrow">AUTOMATIC CLASSIFICATION</div><h2>Rules that fit your life</h2><p class="muted">Create rules from merchant names, dates, accounts, transaction types and amounts. Newer matching rules take precedence for fields they set. Individual transaction overrides always take priority.</p></div></div>
         <article class="panel">
-          <div class="section-heading"><div><div class="eyebrow">NEW RULE</div><h2>Create an automatic rule</h2></div></div>
+          <div class="section-heading"><div><div class="eyebrow" id="ruleFormEyebrow">NEW RULE</div><h2 id="ruleFormTitle">Create an automatic rule</h2></div></div>
           <form id="ruleForm" class="rule-form">
             <label class="form-label">Rule name<input name="name" required placeholder="Summer holiday 2026"></label>
             <label class="form-label">Account<select name="account"><option value="all">Both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
@@ -162,7 +162,7 @@
             <label class="form-label">Set project / event<input name="project" placeholder="e.g. Summer holiday 2026"></label>
             <label class="form-label">Set treatment<select name="treatment"><option value="">Keep current treatment</option><option value="expense">Expense</option><option value="income">Income</option><option value="refund">Refund</option><option value="internal">Internal transfer</option><option value="investment">Investment</option><option value="review">Needs review</option><option value="exclude">Exclude</option></select></label>
             <label class="form-label">Expense nature<select name="nature"><option value="">Automatic / unchanged</option><option value="ordinary">Normal expense</option><option value="incidental">Incidental / one-time</option><option value="annual">Annual expense</option><option value="limited">Limited recurring</option></select></label>
-            <div class="form-actions"><button class="button button-primary" type="submit">Save rule</button><span class="muted small">Example: use a date range with “Expenses only” and a project name to group all holiday spending.</span></div>
+            <div class="form-actions"><button class="button button-primary" id="ruleSaveButton" type="submit">Save rule</button><button class="button button-secondary" id="cancelRuleEdit" type="button" hidden>Cancel edit</button><span class="muted small">Example: use a date range with “Expenses only” and a project name to group all holiday spending.</span></div>
           </form>
         </article>
         <article class="panel"><div class="section-heading"><div><div class="eyebrow">YOUR RULES</div><h2>Active classification rules</h2></div><span class="muted small" id="ruleCount">0 rules</span></div><div id="rulesList" class="rules-list"><div class="empty-state">No custom rules yet.</div></div></article>
@@ -174,10 +174,10 @@
           <div class="merchant-toolbar">
             <label class="search-field">Search merchants<input type="search" id="merchantSearch" placeholder="Merchant name or account"></label>
             <label>Category<select id="merchantCategoryFilter"><option value="all">All categories</option></select></label>
-            <label>Period<select id="merchantPeriodFilter"><option value="all">All history</option><option value="selected">Selected month</option></select></label>
+            <label>Period<select id="merchantPeriodFilter"><option value="all">All history</option><option value="selected">Selected period</option></select></label>
           </div>
           <div class="table-wrap"><table id="merchantTable" class="comparison-table merchant-table">
-            <thead><tr>
+            <colgroup><col style="width:37%"><col style="width:33%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>
               <th><button type="button" class="sort-header" data-sort-merchant="merchant">Merchant <span class="sort-indicator">↕</span></button></th>
               <th><button type="button" class="sort-header" data-sort-merchant="category">Category <span class="sort-indicator">↕</span></button></th>
               <th class="num"><button type="button" class="sort-header" data-sort-merchant="count">Transactions <span class="sort-indicator">↕</span></button></th>
@@ -196,7 +196,7 @@
           <label>Category<select id="transactionCategory"><option value="all">All categories</option><option value="__review">Needs review</option></select></label>
           <label>Treatment<select id="transactionTreatment"><option value="all">All treatments</option><option value="expense">Expense</option><option value="income">Income</option><option value="refund">Refund</option><option value="internal">Internal transfer</option><option value="investment">Investment</option><option value="review">Needs review</option><option value="exclude">Excluded</option></select></label>
         </div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Account</th><th>Description</th><th>Amount</th><th>Category / project</th><th>Classification</th><th></th></tr></thead><tbody id="transactionRows"><tr><td colspan="7" class="empty-state">Import statements to view transactions.</td></tr></tbody></table></div>
+        <div class="table-wrap"><table id="transactionTable" class="data-table sortable-table"><thead><tr><th><button type="button" class="sort-header" data-sort-transaction="date">Date <span class="sort-indicator">▼</span></button></th><th><button type="button" class="sort-header" data-sort-transaction="account">Account <span class="sort-indicator">↕</span></button></th><th><button type="button" class="sort-header" data-sort-transaction="description">Description <span class="sort-indicator">↕</span></button></th><th><button type="button" class="sort-header" data-sort-transaction="amount">Amount <span class="sort-indicator">↕</span></button></th><th><button type="button" class="sort-header" data-sort-transaction="category">Category / project <span class="sort-indicator">↕</span></button></th><th><button type="button" class="sort-header" data-sort-transaction="classification">Classification <span class="sort-indicator">↕</span></button></th><th></th></tr></thead><tbody id="transactionRows"><tr><td colspan="7" class="empty-state">Import statements to view transactions.</td></tr></tbody></table></div>
         <div class="table-footer"><span id="transactionCount" class="muted small">0 transactions</span><div><button class="button button-secondary" id="prevPage">Previous</button><button class="button button-secondary" id="nextPage">Next</button></div></div>
       </section>
 
