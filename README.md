@@ -5,7 +5,7 @@ A local-first household finance analysis app for Revolut CSV exports. It is sepa
 ## Start
 
 1. Download or clone this repository to your computer.
-2. Open Finances/index.html in a modern browser (Chrome, Edge or Firefox).
+2. Open index.html in a modern browser (Chrome, Edge or Firefox).
 3. Select all available CSV exports under Dan's account and Anca's account.
 4. Import the files. You can import later statements at any time; exact re-imported rows are skipped.
 5. Use the Overview, Comparisons, Projects, Rules, Transactions and Savings forecast sections.
@@ -21,7 +21,7 @@ No bank login, API key, server, external JavaScript library or internet connecti
 - Use Restore backup to restore or merge a backup.
 - Clearing browser site data can remove the local database; export a backup regularly.
 
-The repository may contain bank exports in other folders. Keep the repository private. This app does not copy or publish those exports, but it cannot make files already committed to a public repository private.
+This repository contains the dashboard application code. Bank CSV files are selected locally by the user and are not uploaded by the app.
 
 ## Import format
 
@@ -39,6 +39,7 @@ Completed Date is used when present; Started Date is used when Completed Date is
 - Recognised investment destinations are tracked separately from household consumption.
 - Unrecognised transfers and incoming top-ups are sent to Needs review, not guessed as income or expenses.
 - Custom rules can match account, description text, transaction type, date range and amount range. They can set a category, project, treatment or expense nature.
+- Merchant categories can be managed centrally and apply to the merchant's historical transactions and future imports.
 - Individual transaction overrides take precedence over custom and built-in rules.
 
 Review the initial classifications before relying on totals. In particular, confirm ambiguous transfer descriptions and any new merchants.
@@ -53,6 +54,7 @@ Included:
 - Same-day cutoff for the latest incomplete imported month.
 - Custom merchant / date / account / type / amount rules and project labels.
 - Manual transaction classification overrides.
+- Searchable, sortable merchant management with persistent merchant-level category assignments.
 - One-time / limited-expense candidates based on merchant frequency and configurable thresholds.
 - Pre-salary savings estimate using balances entered by the user, days to salary, recent 90-day spending, known payments and a minimum reserve.
 
@@ -69,3 +71,10 @@ Not yet included:
 ## Important
 
 This is a decision-support tool, not accounting or tax software. Imported data can be incomplete, bank descriptions can be ambiguous, and automatic classifications are suggestions. Confirm review items and check the date coverage before acting on a result.
+
+
+## Recent interface improvements
+
+- The overview places automatic insights first, followed by household filters, financial overview, data import and the application introduction.
+- Comparison columns can be sorted by category or value. Change versus last year shows the euro difference and percentage separately.
+- Merchant management groups spend by normalised merchant, supports search and category/period filtering, and applies merchant category choices to past and future transactions.
