@@ -82,3 +82,6 @@ This is a decision-support tool, not accounting or tax software. Imported data c
 - The overview places automatic insights first, followed by household filters, financial overview, data import and the application introduction.
 - Comparison columns can be sorted by category or value. Change versus last year shows the euro difference and percentage separately.
 - Merchant management groups spend by normalised merchant, supports search and category/period filtering, and applies merchant category choices to past and future transactions.
+
+
+Recent refinements: AAG Beleggingen is now classified as Housing & mortgage (not Investment); TAROM is Travel; Dunea, Budget Energie, Greenchoice, Engie Nederland and Innova Energie are Utilities & telecom; CJIB, Stichting de Haagse Scholen, Voogd Voogd Verzekering and ABN AMRO Schadev NV have updated categories. Period selection is shared across Overview, Comparisons, Merchant management and Transactions, with This month, Previous month, Last 6 months, YTD and Custom presets.
