@@ -320,7 +320,6 @@ internal-transfer phrase is checked before the card-payment rules.
 
 The current investment destination matching list contains:
 
-  aag beleggingen
   meesman bel fondsen
   interactive brokers
   flexible cash funds
@@ -429,7 +428,7 @@ contains a term, the first matching group supplies the initial category.
 
   Transport & fuel:
     tinq, shell, esso, totalenergies, ns groep, ovpay,
-    yellowbrick, q-park, parkmobile, anwb, tarom
+    yellowbrick, q-park, parkmobile, anwb
 
   Travel:
     booking.com, airbnb, hotel, holiday, transavia, ryanair, tarom
