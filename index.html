@@ -29,11 +29,22 @@
 
         
 
-      <div class="workspace-head home-section" id="householdHeader">
-        <div><div class="eyebrow">YOUR HOUSEHOLD</div><h1>Financial overview</h1><p id="dataStatus" class="muted">No transactions imported yet.</p></div>
-        <div class="head-filters">
-          <label>Account<select id="accountFilter"><option value="all">Household · both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
-          <div class="period-picker shared-period-picker" data-period-picker>
+      <nav class="tabs"
+ aria-label="Dashboard sections">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="compare">Comparisons</button>
+        <button class="tab" data-tab="projects">Projects & incidental</button>
+        <button class="tab" data-tab="rules">Rules</button>
+        <button class="tab" data-tab="transactions">Transactions <span id="reviewBadge" class="tab-badge">0</span></button>
+        <button class="tab" data-tab="forecast">Savings forecast</button>
+      </nav>
+
+      <section class="page active home-section" id="page-overview">
+        <div class="page-intro">
+          <div><div class="eyebrow">YOUR HOUSEHOLD</div><h2>Financial overview</h2><p id="dataStatus" class="muted">No transactions imported yet.</p></div>
+          <label class="inline-select">Account<select id="accountFilter"><option value="all">Household · both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
+        </div>
+        <div class="period-picker shared-period-picker" data-period-picker>
           <span class="filter-caption">Period</span>
           <div class="period-presets">
             <button type="button" class="period-button" data-period-preset="this-month">This month</button>
@@ -48,26 +59,7 @@
             <button type="button" class="button button-primary" data-apply-custom-period>Apply</button>
           </div>
           <span class="period-label" data-period-label>—</span>
-        </div><input type="month" id="periodFilter" hidden>
         </div>
-      </div>
-
-      <article id="automaticInsightsPanel" class="panel insight-panel home-section">
-          <div class="section-heading"><div><div class="eyebrow">AUTOMATIC INSIGHTS</div><h2>Automatic insights</h2></div><span class="muted small">Based on imported completed transactions</span></div>
-          <div id="insights" class="insight-grid"><div class="empty-state">Insights appear after importing transactions.</div></div>
-        </article>
-
-      <nav class="tabs"
- aria-label="Dashboard sections">
-        <button class="tab active" data-tab="overview">Overview</button>
-        <button class="tab" data-tab="compare">Comparisons</button>
-        <button class="tab" data-tab="projects">Projects & incidental</button>
-        <button class="tab" data-tab="rules">Rules</button>
-        <button class="tab" data-tab="transactions">Transactions <span id="reviewBadge" class="tab-badge">0</span></button>
-        <button class="tab" data-tab="forecast">Savings forecast</button>
-      </nav>
-
-      <section class="page active home-section" id="page-overview">
         <div class="kpi-grid overview-kpi-grid">
           <article class="kpi-card"><span>Income this period</span><strong id="kpiIncome">€0</strong><small id="kpiIncomeSub">Completed income transactions</small></article>
           <article class="kpi-card"><span>Net expenses</span><strong id="kpiExpenses">€0</strong><small id="kpiExpensesSub">Expenses less refunds</small></article>
@@ -95,6 +87,11 @@
         </div>
 
       </section>
+
+      <article id="automaticInsightsPanel" class="panel insight-panel home-section">
+          <div class="section-heading"><div><div class="eyebrow">AUTOMATIC INSIGHTS</div><h2>Automatic insights</h2></div><span class="muted small">Based on imported completed transactions</span></div>
+          <div id="insights" class="insight-grid"><div class="empty-state">Insights appear after importing transactions.</div></div>
+        </article>
 
     <section class="import-panel panel home-section" id="importPanel">
       <div class="section-heading">
