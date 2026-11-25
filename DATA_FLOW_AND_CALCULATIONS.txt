@@ -590,8 +590,16 @@ be added to EUR amounts and displayed with a euro symbol. Do not treat
 mixed-currency totals as reliable until currencies have been converted or
 filtered in a future implementation.
 
-The historical balance reconstruction is narrower: it uses EUR balance
-snapshots only and excludes other currencies.
+The historical balance reconstruction is narrower only on the BALANCE side:
+it uses EUR balance snapshots and excludes other-currency balance streams.
+However, its transaction-flow metrics (Income, Net expenses, Investments
+and Savings potential) still use the ordinary metric functions and therefore
+do not filter or convert non-EUR rows. A mixed-currency cycle can consequently
+compare EUR-only cash balances with mixed-currency savings potential. In that
+case Other movement and Cash + invested are not economically comparable.
+The forward-looking 90-day spending rate also uses transaction amounts without
+currency conversion. Use EUR-only source data for meaningful calculations
+until multi-currency conversion/filtering is implemented.
 
 4.3 Treatment can be changed
 
