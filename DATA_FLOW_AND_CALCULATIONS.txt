@@ -576,6 +576,9 @@ For the selected date range and selected account:
   Investments   = sum of Investment metrics
   Cash-flow KPI = Income - Net expenses - Investments
 
+The incidental amount is a subset of Net expenses, not an additional
+amount added on top. The Overview displays it separately, with its share of
+net expenses, to make the one-off component visible without double-counting.
 The net-expense amount includes refunds as negative expenses, so refunds
 reduce the total. Internal transfers and review items do not enter these
 figures unless a rule or manual override changes their treatment.
@@ -976,11 +979,11 @@ one in-memory period selection, so changing any one updates all the others.
 The separate All history / Selected period option in Merchant management
 chooses whether its table uses all imported history or the shared interval.
 
-The period affects the Overview, category comparisons and the Merchant
-management Selected period view. The incidental detector uses the year
-of the selected range's start date. The Projects summary and Transactions
-list are not restricted to the selected date interval. The historical
-savings page uses its own salary-cycle windows.
+The period affects the Overview, category comparisons, the Merchant
+management Selected period view, and the Transactions list. The incidental
+detector uses the year of the selected range's start date and scans that
+calendar year. The Projects summary is not restricted to the selected date
+interval. The historical savings page uses its own salary-cycle windows.
 
 9.3 Comparison method
 
@@ -1006,8 +1009,13 @@ not automatically treated as zero.
 
 Category comparisons can measure Expenses or Income. Category rows are
 built from categories with a non-zero metric in at least one compared
-period. Investment is shown separately in the Overview KPI and is not a
-selectable category-comparison measure.
+period. For Expense comparisons, transactions whose final Nature is
+incidental and whose final Treatment is Expense or Refund are grouped under
+a separate reporting row called Incidental expenses. The underlying
+merchant category is retained in the transaction classification; the
+separate row is a reporting view and does not rewrite the category.
+Investment is shown separately in the Overview KPI and is not a selectable
+category-comparison measure.
 
 The Change vs LY field is:
   Euro change = current value - last-year value
