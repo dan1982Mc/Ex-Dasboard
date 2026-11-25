@@ -61,15 +61,21 @@
           <span class="period-label" data-period-label>—</span>
         </div>
         <div class="kpi-grid overview-kpi-grid">
+          <article class="kpi-card accent"><span>Normal household spending</span><strong id="kpiNormal">€0</strong><small id="kpiNormalSub">Regular + Fixed · annual costs allocated monthly</small></article>
+          <article class="kpi-card"><span>Actual spending</span><strong id="kpiExpenses">€0</strong><small id="kpiExpensesSub">Actual expense / refund outflows</small></article>
+          <article class="kpi-card incidental-kpi"><span>Incidental & Projects</span><strong id="kpiIncidental">€0</strong><small id="kpiIncidentalSub">Included in actual spending</small></article>
           <article class="kpi-card"><span>Income this period</span><strong id="kpiIncome">€0</strong><small id="kpiIncomeSub">Completed income transactions</small></article>
-          <article class="kpi-card"><span>Net expenses</span><strong id="kpiExpenses">€0</strong><small id="kpiExpensesSub">Expenses less refunds</small></article>
-          <article class="kpi-card incidental-kpi"><span>Incidental expenses</span><strong id="kpiIncidental">€0</strong><small id="kpiIncidentalSub">Separate view · included in net expenses</small></article>
           <article class="kpi-card"><span>Investments</span><strong id="kpiInvestments">€0</strong><small>Shown separately from consumption</small></article>
-          <article class="kpi-card accent"><span>Cash flow after expenses</span><strong id="kpiNet">€0</strong><small>Income less expenses and investments</small></article>
+          <article class="kpi-card"><span>Cash flow after expenses</span><strong id="kpiNet">€0</strong><small>Income less actual expenses and investments</small></article>
         </div>
+        <article class="panel spending-breakdown-panel">
+          <div class="section-heading"><div><div class="eyebrow">ACTUAL SPENDING BREAKDOWN</div><h2>Where the money went</h2></div><span class="muted small">Cash paid in the selected period</span></div>
+          <div id="spendingGroupBreakdown" class="spending-group-grid"><div class="empty-state">Import statements to see the spending split.</div></div>
+          <p class="muted small spending-breakdown-note">Normal household spending uses Regular + Fixed costs. Annual expenses are allocated across 12 months; project, incidental and limited recurring costs are excluded.</p>
+        </article>
         <div class="content-grid">
           <article class="panel wide">
-            <div class="section-heading"><div><div class="eyebrow">WHAT CHANGED?</div><h2>Category comparison</h2></div><select id="overviewMetric"><option value="expense">Expenses</option><option value="income">Income</option></select></div>
+            <div class="section-heading"><div><div class="eyebrow">WHAT CHANGED?</div><h2>Category comparison</h2></div><select id="overviewMetric"><option value="normal">Normal household spending</option><option value="actual">Actual spending</option><option value="income">Income</option></select></div>
             <p class="muted" id="overviewPeriodNote">Compared with the same period last year and the historical average.</p>
             <div id="overviewComparison" class="comparison-list empty-state">Import statements to see category comparisons.</div>
             <button class="text-button" data-goto="compare">Open full comparison →</button>
@@ -130,8 +136,8 @@
     </section>
 
       <section class="page" id="page-compare">
-        <div class="page-intro"><div><div class="eyebrow">HISTORICAL ANALYSIS</div><h2>Compare like with like</h2><p class="muted">The selected period is compared with the same date range one year earlier and the average of available earlier years.</p></div>
-          <label class="inline-select">Measure<select id="compareMetric"><option value="expense">Expenses</option><option value="income">Income</option></select></label>
+        <div class="page-intro"><div><div class="eyebrow">HISTORICAL ANALYSIS</div><h2>Compare like with like</h2><p class="muted">Normal household spending is the default comparison. Annual costs are allocated monthly; switch to Actual spending to compare cash paid in each period.</p></div>
+          <label class="inline-select">Measure<select id="compareMetric"><option value="normal">Normal household spending</option><option value="actual">Actual spending</option><option value="income">Income</option></select></label>
         </div>
         <div class="period-picker shared-period-picker" data-period-picker>
           <span class="filter-caption">Period</span>
@@ -150,7 +156,7 @@
           <span class="period-label" data-period-label>—</span>
         </div>
         <div class="kpi-grid compact">
-          <article class="kpi-card"><span>Selected period</span><strong id="compareCurrent">€0</strong><small id="compareCurrentSub">Current period</small></article>
+          <article class="kpi-card"><span id="compareMeasureLabel">Normal household spending</span><strong id="compareCurrent">€0</strong><small id="compareCurrentSub">Current period</small></article>
           <article class="kpi-card"><span>Same period last year</span><strong id="compareLastYear">—</strong><small id="compareLastYearSub">Year-on-year baseline</small></article>
           <article class="kpi-card"><span>Previous years' average</span><strong id="compareAverage">—</strong><small id="compareAverageSub">Available historical years</small></article>
           <article class="kpi-card accent"><span>Difference vs last year</span><strong id="compareDelta">—</strong><small id="compareDeltaSub">Absolute and percentage difference</small></article>
@@ -163,10 +169,10 @@
       </section>
 
       <section class="page" id="page-projects">
-        <div class="page-intro"><div><div class="eyebrow">EXCEPTIONAL SPENDING</div><h2>Projects & incidental expenses</h2><p class="muted">Keep everyday categories intact while grouping trips, renovations and other time-limited spending into projects.</p></div></div>
+        <div class="page-intro"><div><div class="eyebrow">EXCEPTIONAL SPENDING</div><h2>Projects & incidental expenses</h2><p class="muted">Projects group exceptional spending across merchants. Project-tagged, incidental and limited recurring expenses roll into Incidental & Projects in actual spending and are excluded from Normal household spending.</p></div></div>
         <div class="content-grid">
           <article class="panel wide"><div class="section-heading"><div><div class="eyebrow">PROJECTS</div><h2>Spending by project</h2></div><button class="button button-secondary" data-goto="rules">Create a project rule</button></div><div id="projectSummary" class="project-grid"><div class="empty-state">Add a project label through a rule or transaction override.</div></div></article>
-          <article class="panel"><div class="eyebrow">DETECTION SETTINGS</div><h2>Incidental candidates</h2><p class="muted small">Suggestions are based on how often a merchant appears in the selected year. Marked incidental spending is also reported separately as “Incidental expenses” in the Overview, comparisons and Transactions. It remains included in Net expenses.</p>
+          <article class="panel"><div class="eyebrow">DETECTION SETTINGS</div><h2>Incidental candidates</h2><p class="muted small">Suggestions use merchant frequency and value. Marked incidental, limited recurring and project-tagged transactions are grouped as Incidental & Projects and excluded from Normal household spending. They remain included in Actual spending.</p>
             <label class="form-label">Maximum transactions per merchant / year<input type="number" id="incidentalMax" min="1" max="12" value="2"></label>
             <label class="form-label">Minimum total amount (€)<input type="number" id="incidentalMin" min="0" step="5" value="75"></label>
             <button class="button button-secondary" id="saveIncidental">Update detection</button>
@@ -193,7 +199,7 @@
             <label class="form-label">Set category<input name="category" list="categoryOptions" placeholder="Leave blank to keep current category"></label>
             <label class="form-label">Set project / event<input name="project" placeholder="e.g. Summer holiday 2026"></label>
             <label class="form-label">Set treatment<select name="treatment"><option value="">Keep current treatment</option><option value="expense">Expense</option><option value="income">Income</option><option value="refund">Refund</option><option value="internal">Internal transfer</option><option value="investment">Investment</option><option value="review">Needs review</option><option value="exclude">Exclude</option></select></label>
-            <label class="form-label">Expense nature<select name="nature"><option value="">Automatic / unchanged</option><option value="ordinary">Normal expense</option><option value="incidental">Incidental / one-time</option><option value="annual">Annual expense</option><option value="limited">Limited recurring</option></select></label>
+            <label class="form-label">Expense nature<select name="nature"><option value="">Automatic / unchanged</option><option value="ordinary">Normal expense</option><option value="fixed">Fixed / recurring</option><option value="annual">Annual expense</option><option value="incidental">Incidental / one-time</option><option value="limited">Limited recurring</option></select></label>
             <div class="rule-preview" id="rulePreview" aria-live="polite"><div class="rule-preview-empty">Add rule conditions to preview matching imported transactions.</div></div>
             <div class="form-actions"><button class="button button-primary" id="ruleSaveButton" type="submit">Save rule</button><button class="button button-secondary" id="cancelRuleEdit" type="button" hidden>Cancel edit</button><span class="muted small">Example: use a date range with “Expenses only” and a project name to group all holiday spending.</span></div>
           </form>
@@ -321,7 +327,7 @@
       <label class="form-label">Category<select id="editCategory"></select></label>
       <label class="form-label">Project / event<input id="editProject" placeholder="Optional"></label>
       <label class="form-label">Treatment<select id="editTreatment"><option value="auto">Use automatic classification</option><option value="expense">Expense</option><option value="income">Income</option><option value="refund">Refund</option><option value="internal">Internal transfer</option><option value="investment">Investment</option><option value="review">Needs review</option><option value="exclude">Exclude</option></select></label>
-      <label class="form-label">Expense nature<select id="editNature"><option value="auto">Automatic detection</option><option value="ordinary">Normal expense</option><option value="incidental">Incidental / one-time</option><option value="annual">Annual expense</option><option value="limited">Limited recurring</option></select></label>
+      <label class="form-label">Expense nature<select id="editNature"><option value="auto">Automatic / category default</option><option value="ordinary">Normal expense</option><option value="fixed">Fixed / recurring</option><option value="annual">Annual expense</option><option value="incidental">Incidental / one-time</option><option value="limited">Limited recurring</option></select></label>
       <div class="dialog-actions"><button class="button button-secondary" id="clearOverrideBtn" type="button">Clear override</button><span></span><button class="button button-primary" id="saveOverrideBtn" type="button">Save override</button></div>
     </form>
   </dialog>
