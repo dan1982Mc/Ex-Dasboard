@@ -660,8 +660,15 @@ A rule can contain these conditions:
   Account:
     Both accounts, Dan or Anca.
 
-  Description / merchant contains:
-    A text substring in the normalised original Description.
+  Include descriptions / merchants:
+    Optional list of text terms. Separate alternatives with commas,
+    semicolons or new lines. A transaction must contain at least one
+    inclusion term when the list is not empty (OR logic).
+
+  Exclude descriptions / merchants:
+    Optional list of text terms. A transaction containing any exclusion
+    term is rejected by this rule (NOT / OR logic). Exclusions are applied
+    after the inclusion list and the other conditions.
 
   Transaction type:
     Any type or one exact Revolut Type value.
@@ -675,9 +682,24 @@ A rule can contain these conditions:
   Apply to:
     All matching transactions, expenses/refunds only, or income only.
 
-All specified conditions must match (AND logic). There are no nested
-groups, OR conditions, regular expressions or separate merchant database
-matching in the current rule engine.
+Account, transaction type, date, amount and direction constraints are
+combined with AND logic. Within the inclusion list, any one term may match.
+Within the exclusion list, a match to any one term prevents this rule from
+applying. Text matching uses normalised substring matching: it ignores
+letter case and diacritic marks and does not require an exact description.
+
+A blank inclusion list means any description is eligible, subject to the
+other conditions. Exclusions can therefore be used on their own to prevent
+selected descriptions from matching an otherwise broad rule. A rule must
+still have at least one condition and at least one output.
+
+The live Matching preview uses the currently imported COMPLETED transactions
+across both accounts (unless the rule's Account field restricts it). It
+updates as rule conditions are edited and shows the match count, the number
+rejected by exclusion terms, the sum of absolute raw Amount values for
+matched rows (before fees), and up to five sample matches. The preview is
+advisory; saving the rule applies it to all applicable imported and future
+transactions. The preview does not modify transactions.
 
 The direction condition is tested against the built-in base treatment,
 not against a treatment already changed by an earlier custom rule.
@@ -694,10 +716,12 @@ unchanged.
 
 Rules are evaluated in the order saved. New rules are appended to the
 list, so a later matching rule can overwrite fields set by an earlier
-matching rule. It only overwrites the fields it actually sets.
+matching rule. It only overwrites the fields it actually sets. An
+exclusion prevents that particular rule from applying; it does not clear
+a project or classification previously assigned by another matching rule.
 
 The form requires at least one condition and at least one output.
-A direction selection by itself is not sufficient as a condition.
+Direction alone is not sufficient as a condition.
 
 There is an enabled flag in the stored rule format, but the current
 interface does not provide a separate enable/disable control. Newly saved

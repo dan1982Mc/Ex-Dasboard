@@ -182,7 +182,8 @@
           <form id="ruleForm" class="rule-form">
             <label class="form-label">Rule name<input name="name" required placeholder="Summer holiday 2026"></label>
             <label class="form-label">Account<select name="account"><option value="all">Both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
-            <label class="form-label">Description / merchant contains<input name="contains" placeholder="Optional, e.g. Booking.com"></label>
+            <label class="form-label">Include descriptions / merchants (match ANY)<textarea name="contains" rows="3" placeholder="Praxis, Gamma, IKEA"></textarea><small class="rule-field-help">Separate alternatives with commas, semicolons or new lines. Partial matches are case-insensitive.</small></label>
+            <label class="form-label">Exclude descriptions / merchants (match NONE)<textarea name="excludeContains" rows="3" placeholder="Regular groceries, unrelated purchases"></textarea><small class="rule-field-help">A transaction matching any exclusion term will not be changed by this rule.</small></label>
             <label class="form-label">Transaction type<select name="type"><option value="all">Any type</option><option>Card Payment</option><option>Card Refund</option><option>Transfer</option><option>Deposit</option><option>Topup</option><option>Fee</option><option>Exchange</option></select></label>
             <label class="form-label">Date from<input name="dateFrom" type="date"></label>
             <label class="form-label">Date to<input name="dateTo" type="date"></label>
@@ -193,6 +194,7 @@
             <label class="form-label">Set project / event<input name="project" placeholder="e.g. Summer holiday 2026"></label>
             <label class="form-label">Set treatment<select name="treatment"><option value="">Keep current treatment</option><option value="expense">Expense</option><option value="income">Income</option><option value="refund">Refund</option><option value="internal">Internal transfer</option><option value="investment">Investment</option><option value="review">Needs review</option><option value="exclude">Exclude</option></select></label>
             <label class="form-label">Expense nature<select name="nature"><option value="">Automatic / unchanged</option><option value="ordinary">Normal expense</option><option value="incidental">Incidental / one-time</option><option value="annual">Annual expense</option><option value="limited">Limited recurring</option></select></label>
+            <div class="rule-preview" id="rulePreview" aria-live="polite"><div class="rule-preview-empty">Add rule conditions to preview matching imported transactions.</div></div>
             <div class="form-actions"><button class="button button-primary" id="ruleSaveButton" type="submit">Save rule</button><button class="button button-secondary" id="cancelRuleEdit" type="button" hidden>Cancel edit</button><span class="muted small">Example: use a date range with “Expenses only” and a project name to group all holiday spending.</span></div>
           </form>
         </article>
