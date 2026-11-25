@@ -181,7 +181,9 @@ Each imported row stores:
 
 The original transaction description and the imported source fields are
 not rewritten when a user changes a category, treatment or nature. A
-manual classification is stored separately in the override object.
+manual classification is stored separately in the override object. The
+original CSV file contents are not stored; only parsed fields and the
+source filename are retained.
 
 2.8 De-duplication and repeat imports
 
@@ -599,7 +601,8 @@ compare EUR-only cash balances with mixed-currency savings potential. In that
 case Other movement and Cash + invested are not economically comparable.
 The forward-looking 90-day spending rate also uses transaction amounts without
 currency conversion. Use EUR-only source data for meaningful calculations
-until multi-currency conversion/filtering is implemented.
+until multi-currency conversion/filtering is implemented. A blank Currency
+field defaults to EUR, so such a row can also enter EUR-only balance streams.
 
 4.3 Treatment can be changed
 
@@ -608,6 +611,10 @@ Treatment can be changed by:
   - A manual transaction override in Transactions.
 
 Merchant management changes category only; it does not change treatment.
+
+The manual Category dropdown is limited to the standard category list plus
+an Automatic option. The custom-rule category field is a text input with a
+suggested list, so a rule can store a category label outside that list.
 
 Changing Treatment can change overview totals, comparisons, merchant
 inclusion, project totals, incidentals and historical savings potential.
@@ -782,7 +789,9 @@ Candidates are sorted by current-year total outflow, highest first. The
 table displays up to 50 suggestions.
 
 A single matching historical transaction is labelled "Possible one-time".
-Other qualifying groups are labelled "Limited / occasional".
+Other qualifying groups are labelled "Limited / occasional". The all-history
+frequency set also includes previously marked incidental transactions; only
+the current-year candidate group skips rows already marked incidental.
 
 This is a frequency-and-value heuristic. It does not understand the
 purchase purpose or prove that a purchase will never recur. For example,
@@ -804,7 +813,11 @@ that account and the selected START YEAR. It writes the matching rows to
 IndexedDB and refreshes the dashboard.
 
 The action does not change the transaction's category or treatment.
-It does not delete or hide the transaction.
+It does not delete or hide the transaction. The implementation finds all
+completed rows for the same account, merchant key and selected START YEAR;
+it does not reuse only the specific transaction IDs displayed in the
+candidate group. Any other completed row sharing that key and year can also
+receive the incidental nature override.
 
 6.4 What incidental changes in the dashboard
 
@@ -1120,7 +1133,10 @@ For a cycle from the 26th to the 25th:
     Latest Balance snapshot on or before the cycle's ending 25th.
 
 The stream snapshots are summed across active EUR account/product
-streams to calculate combined opening and closing balances.
+streams to calculate combined opening and closing balances. The calculation
+assumes each Revolut Balance value is the running balance after that row;
+it does not independently reconcile the CSV against a separate account
+statement closing balance.
 
 11.3 Completeness test
 
@@ -1152,6 +1168,13 @@ on or before the boundary. There is no maximum-age test. A snapshot several
 days before the boundary can therefore be used if no later snapshot is
 present. Check statement date coverage before relying on a cycle's
 balance movement.
+
+The completeness test also does not require every selected account to
+contribute an EUR balance stream. An account with no EUR transaction stream
+(for example, if its imported rows are only in another currency) can be
+absent from the combined EUR balance sum without a separate per-account
+missing-stream warning. Verify that each expected account and Product is
+represented before interpreting a household cash-retained figure.
 
 11.4 Historical savings metrics
 
