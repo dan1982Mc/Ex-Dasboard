@@ -34,3 +34,26 @@
 
 @media(max-width:900px){.savings-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.savings-kpi-grid{grid-template-columns:1fr}}
+
+/* Shared period picker and incidental expense reporting */
+.shared-period-picker{min-width:0;max-width:none;width:100%;margin:10px 0 14px;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.head-filters .period-picker{max-width:760px}
+.head-filters .shared-period-picker{border:0;background:transparent;padding:0;margin:0}
+.period-presets{gap:6px}
+.period-button{white-space:nowrap}
+.overview-kpi-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.incidental-kpi{background:#fffaf0;border-color:#f0dfbb}
+.incidental-kpi>strong{color:#94620e}
+.comparison-table.sortable-table th:nth-child(2) .sort-header,
+.comparison-table.sortable-table th:nth-child(3) .sort-header,
+.comparison-table.sortable-table th:nth-child(4) .sort-header{justify-content:center;text-align:center}
+.comparison-table.sortable-table td:nth-child(2),
+.comparison-table.sortable-table td:nth-child(3),
+.comparison-table.sortable-table td:nth-child(4){text-align:center}
+.incidental-suggestions-table th:nth-child(3),
+.incidental-suggestions-table th:nth-child(4),
+.incidental-suggestions-table td:nth-child(3),
+.incidental-suggestions-table td:nth-child(4){text-align:center}
+@media(max-width:1180px){.overview-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.overview-kpi-grid{grid-template-columns:1fr}}
