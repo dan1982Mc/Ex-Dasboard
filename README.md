@@ -14,6 +14,8 @@ No bank login, API key, server, external JavaScript library or internet connecti
 
 For a detailed explanation of CSV parsing, classification priority, treatment, incidentals, merchant grouping, formulas, savings reconstruction and current assumptions, read [DATA_FLOW_AND_CALCULATIONS.txt](DATA_FLOW_AND_CALCULATIONS.txt).
 
+For a detailed explanation of CSV parsing, classification priority, treatment, incidentals, merchant grouping, formulas, savings reconstruction and current assumptions, read [DATA_FLOW_AND_CALCULATIONS.txt](DATA_FLOW_AND_CALCULATIONS.txt).
+
 ## Local data and privacy
 
 - Transactions are stored in the browser's IndexedDB database on that device.
