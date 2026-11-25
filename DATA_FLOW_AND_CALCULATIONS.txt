@@ -432,27 +432,28 @@ contains a term, the first matching group supplies the initial category.
     yellowbrick, q-park, parkmobile, anwb, tarom
 
   Travel:
-    booking.com, airbnb, hotel, holiday, transavia, ryanair
+    booking.com, airbnb, hotel, holiday, transavia, ryanair, tarom
 
   Healthcare:
     de friesland, zorgverzekeraar, dr.max, apotheek, pharmacy
 
   Housing & mortgage:
-    vve, hypotheek, dunea, budget energie, greenchoice,
-    engie nederland, innova energie
+    vve, hypotheek, aag beleggingen
 
   Utilities & telecom:
+    dunea, budget energie, greenchoice, engie nederland, innova energie,
     vodafone, odido, ziggo, kpn
 
   Taxes & government:
     gemeente, belastingdienst, gem denhaag,
-    regionale belasting, waterschap, belasting
+    regionale belasting, waterschap, belasting, cjib verkeersboetes, cjib
 
   Children & education:
-    swimkids, haagse scholen, school
+    swimkids, haagse scholen, stichting de haagse scholen, school
 
   Insurance & pension:
-    national nederlanden, nationale-nederlanden
+    national nederlanden, nationale-nederlanden,
+    voogd voogd verzekering, abn amro schadev nv
 
 These rules are suggestions based on description text. They are not learned
 from the user's spending history and are not a third-party merchant
@@ -572,6 +573,7 @@ For the selected date range and selected account:
 
   Income        = sum of Income metrics
   Net expenses  = sum of Expense and Refund metrics
+  Incidental    = subset of Net expenses where Nature is incidental
   Investments   = sum of Investment metrics
   Cash-flow KPI = Income - Net expenses - Investments
 
@@ -831,8 +833,11 @@ Current implemented effects:
 
 Current non-effects:
 
-  - They remain included in the Overview expense totals.
-  - They remain included in category comparisons.
+  - They remain included in Overview Net expenses and are displayed as a
+    separate incidental KPI, as a subset of Net expenses.
+  - Expense comparisons and Transactions display marked incidental rows
+    under the separate reporting label Incidental expenses; the underlying
+    merchant category remains available in the transaction detail.
   - They remain in merchant-management totals.
   - They remain in the Projects transaction history.
   - They remain visible in Transactions.
@@ -953,13 +958,24 @@ The period control supports:
     First day of the current calendar month through today.
 
   Previous month:
-    Full previous calendar month.
+    First through last day of the immediately preceding calendar month.
+    The end boundary is the previous month's last day, not the end of
+    the current month.
 
-  Same month last year:
-    Full corresponding calendar month one year earlier.
+  Last 6 months:
+    Rolling six calendar months back from today through today.
+
+  YTD:
+    1 January of the current year through today.
 
   Custom:
     Inclusive start and end dates chosen by the user.
+
+The same selected interval is available from Overview, Comparisons,
+Merchant management (Rules page) and Transactions. These controls share
+one in-memory period selection, so changing any one updates all the others.
+The separate All history / Selected period option in Merchant management
+chooses whether its table uses all imported history or the shared interval.
 
 The period affects the Overview, category comparisons and the Merchant
 management Selected period view. The incidental detector uses the year
