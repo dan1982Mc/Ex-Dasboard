@@ -1,0 +1,1444 @@
+HOUSEHOLD FINANCES DASHBOARD
+DATA FLOW, CLASSIFICATION RULES, CALCULATIONS AND ASSUMPTIONS
+================================================================
+
+Prepared: 25 November 2026
+Repository: dan1982Mc/Ex-Dasboard
+Scope: explanation of the implementation currently on the main branch.
+
+PURPOSE OF THIS DOCUMENT
+------------------------
+
+This guide explains what the dashboard actually does to the Revolut CSV
+rows after import. It describes the implemented rules and calculations,
+not what a bank statement should mean in theory.
+
+The dashboard is a local browser application. It does not connect to
+Revolut, does not upload the CSV files, and does not contain the household's
+transaction data in this GitHub repository. Your browser stores imported
+transactions and settings locally.
+
+The most important distinction throughout the application is:
+
+  CATEGORY       What type of transaction it is assigned to.
+  TREATMENT      How the transaction affects financial calculations.
+  NATURE         Whether an expense is ordinary, incidental, annual, etc.
+  PROJECT        An optional label grouping transactions into an event.
+
+These are independent classification fields. For example, a Jumbo purchase
+can have category "Groceries", treatment "Expense", nature "Incidental",
+and project "Kitchen renovation". Marking it incidental does not turn it
+into a transfer, remove it from the normal expense totals, or change its
+category.
+
+
+1. APPLICATION STRUCTURE AND WHERE DATA LIVES
+----------------------------------------------
+
+Main files:
+
+  index.html   Dashboard sections, controls, tables and dialogs.
+  app.js       CSV parser, storage, classification, calculations and events.
+  styles.css  Layout and visual styling.
+  README.md    Installation and short project description.
+
+Local browser storage:
+
+  IndexedDB database: household-finances-v1
+  Object store:       transactions
+  Key field:          id
+  Database version:   1
+
+  localStorage key:   household-finances-settings-v1
+
+Transactions are kept in IndexedDB. Settings are kept separately in
+localStorage. Settings include custom rules, merchant-category assignments,
+incidental-detection thresholds and forward-forecast inputs.
+
+The application does not use a server database or cloud synchronisation.
+Opening the same files on another browser or computer does not automatically
+bring the data with it. Use the JSON Backup function to move the data.
+
+The Account selector filters the household data to:
+
+  Household / both accounts
+  Dan
+  Anca
+
+Most calculated views use this account filter. The transaction list also
+uses it. Changing the account selector does not delete or modify data.
+
+
+2. CSV IMPORT: WHAT IS READ AND WHAT IS STORED
+----------------------------------------------
+
+2.1 Expected Revolut CSV columns
+
+The importer requires these exact column names (case-sensitive after
+trimming surrounding whitespace):
+
+  Type
+  Product
+  Started Date
+  Completed Date
+  Description
+  Amount
+  Fee
+  Currency
+  State
+  Balance
+
+A file missing any required column is rejected. The importer is designed
+for the comma-separated Revolut export format. It supports quoted fields
+and escaped double quotes inside quoted fields.
+
+2.2 Account assignment
+
+The user chooses files under either Dan's account or Anca's account.
+The selected account name is attached to every row imported from that file.
+The importer does not infer the account from the description or CSV content.
+
+2.3 Transaction date
+
+The dashboard uses:
+
+  Completed Date, when it is not blank;
+  otherwise Started Date.
+
+The first ten characters are used as the transaction date. This expects
+the Revolut date format to begin with YYYY-MM-DD. The application does not
+perform a comprehensive date validation or reinterpret other date formats.
+
+The selected date is used for periods, sorting, comparisons, incidentals and
+salary-cycle grouping.
+
+2.4 Amount, Fee and Balance parsing
+
+Amount and Fee are converted to numbers during import. The number parser
+accepts common European and US-style separators, for example:
+
+  1.234,56  -> 1234.56
+  1,234.56  -> 1234.56
+  -€ 12,34  -> -12.34
+  (12.34)   -> -12.34
+  1,234     -> 1234   (a single separator followed by three digits is
+                       treated as a thousands separator)
+
+Currency symbols and spaces are removed before parsing. A minus sign or
+parentheses indicate a negative number. When both comma and dot occur,
+the last one is interpreted as the decimal separator and the other as a
+thousands separator. When a single separator occurs with three trailing
+digits, it is treated as a thousands separator.
+
+This is a practical locale heuristic, not a complete international number
+format standard. An unusual number format may be interpreted incorrectly.
+
+Balance is retained as its original text in the stored transaction. It is
+parsed later only when the historical savings reconstruction reads balance
+snapshots. A blank Balance is not converted to zero; it is treated as a
+missing snapshot.
+
+Currency is stored as provided. If Currency is blank, it defaults to EUR.
+Product is stored as provided and is used to separate balance streams in
+the historical savings calculation.
+
+2.5 State handling
+
+State is trimmed and converted to uppercase. A row whose state is not
+exactly COMPLETED remains stored and visible in Transactions, but it is
+excluded from the normal completed-transaction financial totals.
+
+2.6 Cash effect
+
+The application calculates the cash effect of each row as:
+
+  Cash effect = Amount - Fee
+
+It applies this formula consistently; it does not separately infer whether
+a fee was already included in the Amount field. Check the source export if
+a statement's fee convention differs.
+
+2.7 Stored transaction fields
+
+Each imported row stores:
+
+  id            Generated identifier used for local de-duplication.
+  account       Dan or Anca, based on the import selection.
+  date          Completed Date, otherwise Started Date, first ten chars.
+  type          Revolut transaction Type.
+  product       Revolut Product.
+  started       Original Started Date text.
+  completed     Original Completed Date text.
+  description   Original Description.
+  amount        Parsed numeric Amount.
+  fee           Parsed numeric Fee.
+  currency      Currency, defaulting to EUR if blank.
+  state         Uppercase transaction State.
+  balance       Original Balance text.
+  sourceFile    Name of the imported file.
+  importedAt    Local import timestamp.
+  override      Added only when a user manually overrides classification.
+
+The original transaction description and the imported source fields are
+not rewritten when a user changes a category, treatment or nature. A
+manual classification is stored separately in the override object. The
+original CSV file contents are not stored; only parsed fields and the
+source filename are retained.
+
+2.8 De-duplication and repeat imports
+
+An ID is made from the account name and a hash of these fields:
+
+  account, Type, Product, Started Date, Completed Date, Description,
+  Amount, Fee, Currency, State and Balance.
+
+If the exact same record is imported again for the same account, it has the
+same ID and is skipped. The check also catches duplicates between multiple
+files selected in the same import operation.
+
+Important consequences:
+
+  - Import is additive. It does not delete existing rows that are absent
+    from a later CSV export.
+  - If any field in the fingerprint changes, the row gets a different ID.
+    A revised transaction is therefore not automatically matched to and
+    replaced with the earlier row.
+  - A changed Balance value alone is enough to produce a different ID.
+  - The account name is part of the ID. The same source row imported once
+    as Dan and once as Anca is treated as two different records.
+
+The importer reports how many new rows were added and how many exact
+duplicates were skipped. It does not reconcile statement versions or
+identify every possible economic duplicate.
+
+
+3. AUTOMATIC CLASSIFICATION: CATEGORY, TREATMENT, NATURE AND SOURCE
+--------------------------------------------------------------------
+
+3.1 Classification output
+
+For each transaction the classifier builds these fields:
+
+  treatment  Controls whether and how it enters financial calculations.
+  category   The descriptive category shown in tables and comparisons.
+  project    Optional project/event name.
+  nature     Expense nature, such as ordinary or incidental.
+  source     A label explaining which classification source last applied.
+
+The source label is a diagnostic explanation, not a bank-provided field.
+A manual override, for example, changes the source label to "Manual
+override". The original imported Description remains unchanged.
+
+3.2 Text normalisation
+
+Description matching uses normalised text in many places:
+
+  - Convert to lowercase.
+  - Remove diacritic marks from letters.
+  - Trim surrounding whitespace.
+
+For example, matching is generally case-insensitive and more tolerant of
+accent differences. Most built-in mappings use substring matching, not an
+exact merchant identity database. A matching word inside a longer
+description can trigger a rule.
+
+The transaction Type checks themselves are exact string checks after
+trimming. They expect Revolut labels such as Card Payment, Card Refund,
+Transfer, Deposit, Topup, Fee and Exchange.
+
+3.3 Base classification priority
+
+The built-in classifier checks conditions in this order. The first matching
+condition determines the initial treatment and category.
+
+A. State is not COMPLETED
+   Treatment: EXCLUDE
+   Category:  Pending / reverted
+   Reason:    Pending/reverted transaction rows do not enter totals.
+
+B. Description contains a recognised investment destination
+   Treatment: INVESTMENT
+   Category:  Investment
+
+C. Description contains a recognised internal-transfer phrase
+   Treatment: INTERNAL
+   Category:  Internal transfer
+
+D. Type is Exchange, or Description starts with "exchanged to"
+   Treatment: INTERNAL
+   Category:  Currency exchange
+
+E. Type is Card Refund
+   Treatment: REFUND
+   Category:  Merchant category suggestion, or Other / unclassified
+
+F. Type is Card Payment
+   Treatment: EXPENSE
+   Category:  Merchant category suggestion, or Other / unclassified
+
+G. Type is Fee
+   Treatment: EXPENSE
+   Category:  Bank fees
+
+H. Description contains a recognised employer payment phrase
+   Treatment: INCOME
+   Category:  Salary
+
+I. Description contains the Social Insurance Bank payment phrase
+   Treatment: INCOME
+   Category:  Benefits
+
+J. Description contains the Belastingdienst payment phrase
+   Treatment: INCOME
+   Category:  Tax refund
+
+K. Type is Transfer, Deposit or Topup
+   If Amount is negative AND a merchant category suggestion exists:
+       Treatment: EXPENSE
+       Category:  Suggested merchant category
+   Otherwise:
+       Treatment: REVIEW
+       Category:  Needs review
+
+L. Any remaining transaction with negative Amount
+   Treatment: EXPENSE
+   Category:  Merchant category suggestion, or Other / unclassified
+
+M. Any remaining transaction with positive Amount
+   Treatment: REVIEW
+   Category:  Needs review
+
+N. Any remaining zero-amount transaction
+   Treatment: EXCLUDE
+   Category:  Other
+
+The ordering matters. For example, an investment description is checked
+before a normal card-payment or transfer type. A description matching an
+internal-transfer phrase is checked before the card-payment rules.
+
+3.4 Built-in investment description terms
+
+The current investment destination matching list contains:
+
+  aag beleggingen
+  meesman bel fondsen
+  interactive brokers
+  flexible cash funds
+
+Any completed transaction whose normalised Description contains one of
+these strings is initially treated as an Investment, regardless of whether
+the raw Amount is positive or negative. This is a substring rule; it is
+not a verified broker-account reconciliation.
+
+3.5 Built-in internal-transfer description terms
+
+The current internal-transfer matching list contains:
+
+  transfer from anca macarie
+  transfer to dan florin macarie
+  savings vault topup
+  to pocket eur savings from eur
+  pocket withdrawal
+  from flexible account
+  from economii
+  from savings
+  from temp
+  to temp
+  from eur temp
+  to eur temp
+  from end of the month
+  to end of the month
+  from eur end of the month
+  to eur end of the month
+  from sfarsit de luna
+  to sfarsit de luna
+  from eur sfarsit de luna
+  to eur sfarsit de luna
+  to eur hypotheek
+  from eur hypotheek
+  to eur belastingdienst
+  from eur belastingdienst
+  to eur eva
+  from eur eva
+  from eur passat
+  to eur passat
+  from casa
+  to casa
+  from eur casa
+  to eur casa
+
+A description containing one of these phrases is initially classified as
+Internal transfer. These are hard-coded text assumptions. New transfer
+descriptions are not automatically understood unless they match a phrase
+or are handled by a custom rule/manual override.
+
+3.6 Recognised income descriptions
+
+The current salary recognition looks for these description phrases:
+
+  payment from aaarchitecten
+  payment from he space operations
+  payment from fm group human resources
+  payment from bruusk architecten
+
+These are assigned Treatment INCOME and Category Salary.
+
+The current benefits recognition looks for:
+
+  payment from sociale verzekeringsbank
+
+This is assigned Treatment INCOME and Category Benefits.
+
+The current tax-refund recognition looks for:
+
+  payment from belastingdienst
+
+This is assigned Treatment INCOME and Category Tax refund.
+
+These are substring tests against Description. They do not verify the
+sender's bank identity or prove that every payment from the same sender
+has the same economic purpose. A description change can cause a payment
+to fall into Needs review.
+
+3.7 Merchant-category suggestions
+
+The merchant map is a list of text terms. If the normalised Description
+contains a term, the first matching group supplies the initial category.
+
+  Groceries:
+    jumbo, albert heijn, hoogvliet, lidl, aldi, dirk,
+    vleeshandel evers, sligro, brital agf, supermarkt abc,
+    prince-supermarkt
+
+  Restaurants & takeaway:
+    restaurant, mcdonald, burger king, kfc, thuisbezorgd,
+    uber eats, dominos, pizza, bck le george
+
+  Home improvement:
+    hornbach, gamma, praxis, bauhaus, sawiday, renomaster,
+    cibo vloeren, verfwinkel, jafari natuursteen,
+    jan groen tegels, toelevering online
+
+  Home & household:
+    ikea, action, hema, blokker, bol.com, coolblue,
+    mediamarkt, emag, rataplan
+
+  Shopping & clothing:
+    h&m, zara, primark, uniqlo, decathlon, c&a, zalando,
+    beyond male, we fashion
+
+  Transport & fuel:
+    tinq, shell, esso, totalenergies, ns groep, ovpay,
+    yellowbrick, q-park, parkmobile, anwb, tarom
+
+  Travel:
+    booking.com, airbnb, hotel, holiday, transavia, ryanair
+
+  Healthcare:
+    de friesland, zorgverzekeraar, dr.max, apotheek, pharmacy
+
+  Housing & mortgage:
+    vve, hypotheek, dunea, budget energie, greenchoice,
+    engie nederland, innova energie
+
+  Utilities & telecom:
+    vodafone, odido, ziggo, kpn
+
+  Taxes & government:
+    gemeente, belastingdienst, gem denhaag,
+    regionale belasting, waterschap, belasting
+
+  Children & education:
+    swimkids, haagse scholen, school
+
+  Insurance & pension:
+    national nederlanden, nationale-nederlanden
+
+These rules are suggestions based on description text. They are not learned
+from the user's spending history and are not a third-party merchant
+database. Unmatched expense transactions normally become
+Other / unclassified.
+
+For a negative Transfer, Deposit or Topup, a merchant suggestion can make
+it an Expense. A positive transfer/top-up is not made income merely
+because its description resembles a merchant; it remains Needs review
+unless a later custom rule or manual override changes it.
+
+3.8 Category names available in the editor
+
+The standard category list includes:
+
+  Groceries
+  Restaurants & takeaway
+  Housing & mortgage
+  Utilities & telecom
+  Home improvement
+  Home & household
+  Shopping & clothing
+  Transport & fuel
+  Travel
+  Healthcare
+  Insurance & pension
+  Children & education
+  Taxes & government
+  Bank fees
+  Entertainment & leisure
+  Personal transfers · review
+  Other / unclassified
+  Salary
+  Benefits
+  Tax refund
+  Other income
+  Investment
+
+The merchant-category dropdown intentionally excludes Salary, Benefits,
+Tax refund, Other income and Investment. It is meant to assign spending
+merchants, not to define income or investment destinations.
+
+Some runtime labels are also generated by the classifier and are not
+members of that standard editor list, for example Internal transfer,
+Currency exchange, Needs review, Pending / reverted and Other. The
+Transactions category filter is populated from categories actually present
+in the imported transactions, so it can display these runtime labels.
+
+3.9 What happens when no automatic category matches?
+
+An unmatched Card Payment, Card Refund or generic negative transaction
+normally receives Other / unclassified. The treatment can still be Expense
+or Refund even though the category is unknown.
+
+An unrecognised incoming transfer, positive Deposit or positive Topup
+normally receives Needs review and Treatment REVIEW. It is excluded from
+income and spending totals until corrected by a rule or manual override.
+
+"Other / unclassified" and "Needs review" are not the same:
+  Other / unclassified = the treatment may already be an expense/refund,
+                         but the descriptive category is unknown.
+  Needs review         = the economic treatment is not yet trusted.
+
+
+4. TREATMENT: WHAT ENTERS THE CALCULATIONS
+------------------------------------------
+
+Treatment is the financial behaviour field. A category label by itself
+does not decide whether a row is income or expense.
+
+The cash-effect formula is:
+
+  cashEffect = Amount - Fee
+
+The main calculation function then behaves as follows:
+
+  Treatment EXPENSE:
+      Expense metric = -cashEffect
+
+  Treatment REFUND:
+      Expense metric = -cashEffect
+      A normal positive refund therefore creates a negative expense
+      metric and reduces net expenses.
+
+  Treatment INCOME:
+      Income metric = cashEffect
+
+  Treatment INVESTMENT:
+      Investment metric = -cashEffect
+      A normal negative outgoing investment contribution therefore appears
+      as a positive investment amount.
+
+  Treatment INTERNAL:
+      No income, expense or investment metric is created.
+
+  Treatment REVIEW:
+      No income, expense or investment metric is created.
+
+  Treatment EXCLUDE:
+      No income, expense or investment metric is created.
+
+The calculations preserve the sign. They do not force an Expense to be
+positive or an Income to be positive. If a custom rule assigns an unusual
+treatment to a transaction with the opposite cash direction, its metric
+can therefore be negative.
+
+A completed transaction can remain visible in Transactions even when
+Treatment is REVIEW, INTERNAL or EXCLUDE. The treatment filter is a
+classification filter, not a deletion filter.
+
+Non-completed rows are also visible in Transactions but are initially
+assigned EXCLUDE and are omitted from completed-transaction totals.
+
+4.1 Overview formulas
+
+For the selected date range and selected account:
+
+  Income        = sum of Income metrics
+  Net expenses  = sum of Expense and Refund metrics
+  Investments   = sum of Investment metrics
+  Cash-flow KPI = Income - Net expenses - Investments
+
+The net-expense amount includes refunds as negative expenses, so refunds
+reduce the total. Internal transfers and review items do not enter these
+figures unless a rule or manual override changes their treatment.
+
+4.2 Currency warning
+
+The application stores the Currency field, but ordinary income, expense,
+refund, merchant and comparison calculations do not filter by currency
+and do not convert exchange rates. The display formatter always formats
+numbers as EUR.
+
+Therefore, the ordinary dashboard totals assume the imported amounts are
+all EUR. If the CSVs contain non-EUR transactions, those raw amounts can
+be added to EUR amounts and displayed with a euro symbol. Do not treat
+mixed-currency totals as reliable until currencies have been converted or
+filtered in a future implementation.
+
+The historical balance reconstruction is narrower only on the BALANCE side:
+it uses EUR balance snapshots and excludes other-currency balance streams.
+However, its transaction-flow metrics (Income, Net expenses, Investments
+and Savings potential) still use the ordinary metric functions and therefore
+do not filter or convert non-EUR rows. A mixed-currency cycle can consequently
+compare EUR-only cash balances with mixed-currency savings potential. In that
+case Other movement and Cash + invested are not economically comparable.
+The forward-looking 90-day spending rate also uses transaction amounts without
+currency conversion. Use EUR-only source data for meaningful calculations
+until multi-currency conversion/filtering is implemented. A blank Currency
+field defaults to EUR, so such a row can also enter EUR-only balance streams.
+
+4.3 Treatment can be changed
+
+Treatment can be changed by:
+  - A matching custom rule.
+  - A manual transaction override in Transactions.
+
+Merchant management changes category only; it does not change treatment.
+
+The manual Category dropdown is limited to the standard category list plus
+an Automatic option. The custom-rule category field is a text input with a
+suggested list, so a rule can store a category label outside that list.
+
+Changing Treatment can change overview totals, comparisons, merchant
+inclusion, project totals, incidentals and historical savings potential.
+A classification change should therefore be treated as a change to the
+financial model, not merely a visual label.
+
+
+5. CLASSIFICATION PRIORITY: WHICH RULE WINS?
+--------------------------------------------
+
+For a transaction, the final classification is built in this order:
+
+  1. Built-in base classification.
+  2. Merchant-level category assignment.
+  3. Matching custom rules, in saved order.
+  4. Manual transaction override.
+
+The later layer wins for any field it sets. Fields it leaves blank retain
+the value assigned by earlier layers.
+
+5.1 Merchant-level category assignment
+
+Merchant management saves a category under a normalised merchant key.
+That category is applied after the built-in classifier but before custom
+rules. It changes CATEGORY only.
+
+The same normalised merchant key is shared across Dan and Anca. A merchant
+category selected once can therefore apply to matching transactions in
+both accounts and to future imports.
+
+Selecting the Automatic option removes the merchant-level assignment.
+It does not force the built-in category if a custom rule or manual
+transaction override still assigns a category.
+
+5.2 Custom automatic rules
+
+A rule can contain these conditions:
+
+  Account:
+    Both accounts, Dan or Anca.
+
+  Description / merchant contains:
+    A text substring in the normalised original Description.
+
+  Transaction type:
+    Any type or one exact Revolut Type value.
+
+  Date from / date to:
+    Inclusive date boundaries.
+
+  Amount minimum / maximum:
+    Compared against the absolute raw Amount, not Amount minus Fee.
+
+  Apply to:
+    All matching transactions, expenses/refunds only, or income only.
+
+All specified conditions must match (AND logic). There are no nested
+groups, OR conditions, regular expressions or separate merchant database
+matching in the current rule engine.
+
+The direction condition is tested against the built-in base treatment,
+not against a treatment already changed by an earlier custom rule.
+
+A rule can set one or more outputs:
+
+  Category
+  Project / event
+  Treatment
+  Expense nature
+
+A blank output leaves the value from earlier classification layers
+unchanged.
+
+Rules are evaluated in the order saved. New rules are appended to the
+list, so a later matching rule can overwrite fields set by an earlier
+matching rule. It only overwrites the fields it actually sets.
+
+The form requires at least one condition and at least one output.
+A direction selection by itself is not sufficient as a condition.
+
+There is an enabled flag in the stored rule format, but the current
+interface does not provide a separate enable/disable control. Newly saved
+rules are enabled.
+
+5.3 Manual transaction override
+
+The Edit action in Transactions can override:
+
+  Category
+  Project / event
+  Treatment
+  Expense nature
+
+Manual overrides are applied last and take priority over custom rules and
+merchant category assignments. Clear override removes the saved override
+object and returns the transaction to the other classification layers.
+
+An override is stored with the transaction in IndexedDB. It is included in
+the JSON backup.
+
+
+6. EXPENSE NATURE AND ONE-TIME / INCIDENTAL PURCHASES
+-----------------------------------------------------
+
+Nature is separate from Treatment.
+
+Current nature choices include:
+
+  ordinary    Normal expense (the default).
+  incidental  Incidental / one-time.
+  annual      Annual expense.
+  limited     Limited recurring.
+
+Nature does not replace the treatment. A transaction can be:
+
+  Category:  Home improvement
+  Treatment: Expense
+  Nature:    Incidental
+
+It is still an expense. The nature field currently has only limited
+calculation effects, described below.
+
+6.1 Candidate detection defaults
+
+Default settings:
+
+  Maximum transactions per merchant / year: 2
+  Minimum total amount:                     EUR 75
+
+These values can be changed in Projects & incidental. The maximum is
+clamped to the range 1–12 when saved. The minimum is clamped to zero or
+higher.
+
+6.2 How a candidate is found
+
+The detector uses the selected period's START YEAR. It then scans
+completed transactions in that whole calendar year, not only the exact
+custom date interval selected in the period picker.
+
+The current-year candidate scan includes rows that:
+
+  - Have Treatment Expense or Refund.
+  - Have a negative cash effect (cash outflow).
+  - Are not already marked Nature incidental.
+
+Rows are grouped by:
+  Account + normalised merchant key.
+
+For each group it calculates:
+  Count = number of qualifying outflow transaction rows in that year.
+  Total = sum of the absolute cash outflow (Amount - Fee).
+
+The merchant history is then examined across all imported completed
+transactions for that same account and normalised merchant key, where
+Treatment is Expense or Refund and cash effect is negative.
+
+A candidate must satisfy all of these conditions:
+
+  - Current-year transaction count is no greater than the configured
+    maximum.
+  - Current-year total outflow is at least the configured minimum.
+  - The history does not look like a once-per-year pattern.
+  - The all-history qualifying transaction count is no greater than
+    max(4, configured maximum * 2).
+
+The annual-pattern test is a simple heuristic: if at least two different
+years each have transactions in exactly one calendar month, the merchant
+is treated as having an annual pattern and is not suggested. The months
+do not have to be the same month in each year.
+
+Candidates are sorted by current-year total outflow, highest first. The
+table displays up to 50 suggestions.
+
+A single matching historical transaction is labelled "Possible one-time".
+Other qualifying groups are labelled "Limited / occasional". The all-history
+frequency set also includes previously marked incidental transactions; only
+the current-year candidate group skips rows already marked incidental.
+
+This is a frequency-and-value heuristic. It does not understand the
+purchase purpose or prove that a purchase will never recur. For example,
+a genuinely recurring merchant with gaps in the import history may appear
+as an incidental candidate.
+
+6.3 A suggestion does not change any transaction
+
+The candidate list is advisory. It does not automatically modify the
+category, treatment or nature.
+
+Only after the user presses "Mark transactions incidental" does the app
+write a manual override:
+
+  nature = incidental
+
+It applies this override to matching transactions for that merchant,
+that account and the selected START YEAR. It writes the matching rows to
+IndexedDB and refreshes the dashboard.
+
+The action does not change the transaction's category or treatment.
+It does not delete or hide the transaction. The implementation finds all
+completed rows for the same account, merchant key and selected START YEAR;
+it does not reuse only the specific transaction IDs displayed in the
+candidate group. Any other completed row sharing that key and year can also
+receive the incidental nature override.
+
+6.4 What incidental changes in the dashboard
+
+Current implemented effects:
+
+  - Marked rows are excluded from future incidental-candidate groups for
+    the year because the current-year candidate scan skips Nature
+    incidental.
+  - Marked rows are excluded from the 90-day normal-spending rate used by
+    the forward-looking savings calculator.
+
+Current non-effects:
+
+  - They remain included in the Overview expense totals.
+  - They remain included in category comparisons.
+  - They remain in merchant-management totals.
+  - They remain in the Projects transaction history.
+  - They remain visible in Transactions.
+  - Their Treatment remains Expense or Refund unless separately changed.
+
+Nature annual and limited are available as labels, but no separate annual
+expense accrual, monthly spreading, recurring-payment prediction or special
+financial calculation is currently attached to those values.
+
+6.5 Important detail about refunds in the candidate detector
+
+The candidate detector looks for a negative cash effect, so it is looking
+at actual outflows. A normal positive Card Refund has a positive cash
+effect and is not counted as an outflow in the candidate total. The
+merchant management and normal expense metric, however, can include that
+refund as a negative expense to offset earlier spending.
+
+
+7. MERCHANT MANAGEMENT
+----------------------
+
+Merchant names are heuristically cleaned from Description. The cleaner
+removes common leading phrases such as:
+
+  Card payment to/from/at
+  Cash payment to/from/at
+  Refund to/from/at
+  Transfer to/from/at
+  Deposit to/from/at
+  Topup to/from/at
+  Direct debit to/from/at
+
+It also strips some trailing reference, terminal, transaction ID and
+long alphanumeric suffix patterns, then normalises accents, case and
+punctuation for the merchant key.
+
+This is not a bank-provided merchant ID. Similar descriptions can be
+grouped incorrectly, and variations in merchant descriptions can remain
+separate.
+
+7.1 Merchant grouping
+
+The merchant table uses completed Expense and Refund transactions. It
+groups by normalised merchant key without including the account in the
+group key, so the same merchant can be combined across Dan and Anca.
+
+The table shows:
+
+  Merchant       Cleaned merchant label.
+  Category       Final classified category for the group.
+  Transactions   Number of included expense/refund rows.
+  Total spent    Sum of the Expense metric, including refund offsets.
+  Accounts       Account names observed for the group.
+
+The table can be filtered by search, category and All history / Selected
+period, and sorted by merchant, category, transaction count or total spent.
+
+The category displayed for a group is updated as its transactions are
+processed. If transactions for the same merchant have different final
+categories (for example, due to individual manual overrides), the group
+can show the category of the last processed transaction rather than a
+breakdown of every category.
+
+7.2 Merchant category assignment
+
+A merchant category is saved centrally by merchant key. It applies across
+all matching history and future imports, but it can still be overridden
+by a custom rule or by a manual transaction override because those layers
+have higher priority.
+
+The merchant dropdown only offers spending categories. It does not offer
+Salary, Benefits, Tax refund, Other income or Investment.
+
+The merchant Total spent value is net of refunds because refunds create
+negative expense metrics. It is not simply the sum of card-payment
+outflows.
+
+
+8. PROJECTS & INCIDENTALS
+-------------------------
+
+A project is an optional text label, such as a holiday, renovation or
+other event. It can be assigned by a custom rule or manual transaction
+override. It does not replace the transaction category or treatment.
+
+The project summary groups all completed transactions with a project
+label and calculates:
+
+  Project spending = sum of Expense and Refund metrics.
+  Project income   = sum of Income metrics.
+  Transaction count and categories are also shown.
+
+The current project summary is across all imported completed history. It
+is not restricted to the selected overview date interval or selected
+calendar year.
+
+The incidental candidate detector is separate from project grouping.
+Marking a merchant as incidental does not create a project label.
+
+
+9. OVERVIEW, PERIODS AND COMPARISONS
+------------------------------------
+
+9.1 Selected account
+
+The Account selector is applied before completed transactions are used
+for most financial calculations.
+
+9.2 Selected period
+
+The period control supports:
+
+  Default / latest:
+    First day of the month containing the latest imported completed
+    transaction through the date of that latest completed transaction.
+
+  This month:
+    First day of the current calendar month through today.
+
+  Previous month:
+    Full previous calendar month.
+
+  Same month last year:
+    Full corresponding calendar month one year earlier.
+
+  Custom:
+    Inclusive start and end dates chosen by the user.
+
+The period affects the Overview, category comparisons and the Merchant
+management Selected period view. The incidental detector uses the year
+of the selected range's start date. The Projects summary and Transactions
+list are not restricted to the selected date interval. The historical
+savings page uses its own salary-cycle windows.
+
+9.3 Comparison method
+
+For a selected interval:
+
+  Current   = completed transactions inside the selected start/end dates.
+  Last year = same date interval shifted back one calendar year.
+  History   = matching interval for earlier calendar years with at least
+              one completed transaction inside that interval.
+
+If shifting a date back one year would create an invalid date (for
+example 29 February in a non-leap year), the day is clamped to the last
+valid day of that month.
+
+The historical average is the arithmetic mean of the totals for the
+included historical years. A historical year is included when it has at
+least one completed transaction in the interval. For an individual
+category that has no matching transaction in an included year, that
+category contributes zero for that year.
+
+A year with no imported transactions in the interval is omitted. It is
+not automatically treated as zero.
+
+Category comparisons can measure Expenses or Income. Category rows are
+built from categories with a non-zero metric in at least one compared
+period. Investment is shown separately in the Overview KPI and is not a
+selectable category-comparison measure.
+
+The Change vs LY field is:
+  Euro change = current value - last-year value
+  Percentage  = euro change / absolute last-year value * 100
+
+When there is no last-year baseline or its value is effectively zero,
+the percentage is not calculated and the table displays a dash.
+
+9.4 Automatic insights
+
+The Overview insight cards use the currently selected Overview measure
+(Expenses or Income) and the comparison data.
+
+Current thresholds include:
+
+  Largest increase:
+    Last-year value > 0, euro increase > EUR 50 and percentage increase
+    > 15%.
+
+  Largest decrease:
+    Last-year value > 0, euro decrease > EUR 50 and percentage decrease
+    < -15%.
+
+  Above historical average:
+    Historical average > 0, current value > 120% of average, and the
+    euro difference > EUR 50.
+
+The strongest matching rise, fall and above-average category can be shown.
+If none meet the thresholds, a stable / limited-data note is displayed.
+A review-queue card is also included.
+
+These are simple thresholds, not statistical significance tests or
+forecasts.
+
+
+10. TRANSACTIONS PAGE
+---------------------
+
+The Transactions page includes completed and non-completed imported rows.
+The page can filter by:
+
+  Search:
+    Original description, final category, project and account.
+
+  Category:
+    All categories, Needs review, or an actual category found in the
+    currently filtered transactions.
+
+  Treatment:
+    Expense, Income, Refund, Internal transfer, Investment,
+    Needs review or Excluded.
+
+The global Account selector also applies. The Financial overview date
+interval does not filter this table.
+
+Sortable columns:
+
+  Date
+  Account
+  Description
+  Amount
+  Category / project
+  Classification (Treatment)
+
+The default date sort is newest first. Re-clicking a heading reverses
+its direction. New text-column sorts start alphabetically; new date and
+amount sorts start descending. Amount sorting uses signed cash effect
+(Amount - Fee), not absolute spending value.
+
+The table displays 50 rows per page. Sorting and filters apply to the
+whole matching result set; pagination then displays the current 50-row
+slice.
+
+The Edit action opens the manual override dialog. The imported source
+fields remain intact.
+
+The Export filtered CSV action exports all rows matching the current
+Transactions page filters and selected account, not just the currently
+visible page. It includes Date, Account, Type, Description, Amount, Fee,
+Currency, State, final Category, Project, Treatment and Nature.
+
+That filtered CSV is an analysis export, not a full backup or an import
+replacement. In particular, it does not contain the original Product,
+Started Date, Completed Date and Balance fields needed to reproduce all
+historical balance calculations.
+
+
+11. HISTORICAL SAVINGS RECONSTRUCTION
+------------------------------------
+
+The historical section is on the Savings forecast page. It is separate
+from the forward-looking calculator.
+
+11.1 Salary-cycle boundaries
+
+Cycles follow the configured household assumption:
+
+  Start:  26th of a calendar month.
+  End:    25th of the following calendar month, inclusive.
+
+The cycle is grouped into the year in which it ends. For example:
+
+  26 September – 25 October 2026
+  is grouped under year 2026 and month October.
+
+The salary payment description is not used to determine the cycle
+boundary. The 26th–25th grouping is a fixed calendar rule.
+
+The first generated cycle is based on the earliest imported completed
+transaction for the selected account scope. If the first transaction is
+before the 26th of that month, the first cycle starts on the 26th of the
+previous month. That first cycle may therefore have incomplete imported
+history.
+
+The latest cycle is determined by the latest imported completed
+transaction date, not by today's date. If the latest import is out of
+date, the displayed "in progress" cycle will also be out of date.
+
+11.2 Balance streams
+
+Only completed EUR transactions are used for balance snapshots.
+
+A stream is grouped by:
+
+  Account + Product + EUR
+
+Examples can include Dan · Current and Anca · Current. Each stream keeps
+the Balance values from its transactions, sorted by date and transaction
+time.
+
+For a cycle from the 26th to the 25th:
+
+  Opening snapshot:
+    Latest Balance snapshot on or before the 25th immediately before
+    the cycle starts.
+
+  Closing snapshot:
+    Latest Balance snapshot on or before the cycle's ending 25th.
+
+The stream snapshots are summed across active EUR account/product
+streams to calculate combined opening and closing balances. The calculation
+assumes each Revolut Balance value is the running balance after that row;
+it does not independently reconcile the CSV against a separate account
+statement closing balance.
+
+11.3 Completeness test
+
+A closed cycle is considered complete only when:
+
+  - The cycle is closed relative to the latest imported completed date.
+  - At least one EUR balance stream is found.
+  - The imported completed transaction history for each account does not
+    start after the cycle start date.
+  - Every active EUR account/product stream has an opening snapshot.
+  - Every active EUR account/product stream has a closing snapshot.
+
+If these conditions are not met, the balance-based fields are not shown
+as actual cash retained. The row identifies the detected missing
+coverage or snapshot.
+
+The first partial import cycle is not included in annual totals. The
+current in-progress cycle displays classified totals to date, but is not
+included in annual comparisons.
+
+Important limitation: the completeness test cannot prove that every
+transaction in a date range has been imported. It checks the earliest
+transaction date per account and whether opening/closing snapshots exist.
+It does not detect every missing file, missing middle period, omitted
+transaction, stale snapshot or unimported statement.
+
+The opening or closing snapshot is simply the latest available snapshot
+on or before the boundary. There is no maximum-age test. A snapshot several
+days before the boundary can therefore be used if no later snapshot is
+present. Check statement date coverage before relying on a cycle's
+balance movement.
+
+The completeness test also does not require every selected account to
+contribute an EUR balance stream. An account with no EUR transaction stream
+(for example, if its imported rows are only in another currency) can be
+absent from the combined EUR balance sum without a separate per-account
+missing-stream warning. Verify that each expected account and Product is
+represented before interpreting a household cash-retained figure.
+
+11.4 Historical savings metrics
+
+For each salary cycle:
+
+  Income:
+    Sum of all final Treatment INCOME metrics.
+
+  Salary:
+    Portion of Income whose final category is Salary.
+
+  Net expenses:
+    Sum of final Expense and Refund metrics.
+
+  Savings potential:
+    Income - Net expenses.
+
+  Investments:
+    Sum of the final Investment metric. A normal outgoing investment
+    transfer is shown as a positive contribution.
+
+  Opening balance:
+    Sum of all qualifying opening EUR balance snapshots.
+
+  Closing balance:
+    Sum of all qualifying closing EUR balance snapshots.
+
+  Actual cash retained:
+    Closing balance - Opening balance.
+
+  Other movement:
+    Actual cash retained - (Savings potential - Investments).
+
+  Cash + invested:
+    Actual cash retained + Investments.
+
+Savings potential is based on classified transaction flows. It is not a
+bank balance. Actual cash retained is based on running balance snapshots.
+The difference between them can include internal transfers, unrecognised
+flows, balance changes not represented in the classifications, and
+coverage or import issues. Other movement makes that difference visible;
+it does not identify its cause.
+
+Cash + invested is a contribution-style measure. It adds recognised net
+investment transfers to cash change. It is not the market value of
+investment holdings, does not include investment returns, and does not
+measure net worth.
+
+11.5 Annual totals and chart
+
+Annual totals are grouped by cycle end year.
+
+Savings potential, income and expenses use fully imported closed cycles
+with transaction-history coverage. Balance change, investments, other
+movement and cash + invested use only cycles that also have complete
+opening and closing balance snapshots.
+
+The annual table shows how many cycles have complete balance coverage.
+The chart places a cycle in the month in which it ends. It plots:
+
+  Savings potential
+  Cash retained
+  Cash + invested contributions
+
+If a cycle has no complete balance snapshots, the savings-potential bar
+can still be displayed but the balance-based bars are omitted.
+
+Non-EUR balance streams are excluded. No exchange-rate conversion is
+performed in this reconstruction.
+
+11.6 Account filter
+
+The global Account selector applies to historical savings reconstruction.
+With Household selected, the calculator attempts to combine Dan and Anca.
+If either account's imported transaction coverage or balance snapshots
+are incomplete, a household cycle may be marked incomplete even when
+the other account's stream is present.
+
+
+12. FORWARD-LOOKING SAFE-SAVINGS CALCULATOR
+-------------------------------------------
+
+The older manual forecast remains below the historical reconstruction.
+
+Inputs:
+
+  Dan's current available balance
+  Anca's current available balance
+  Next salary date
+  Other income arriving before salary
+  Known payments before salary
+  Minimum cash reserve
+
+A blank account balance is treated as zero. At least one entered balance
+is sufficient for the calculation.
+
+The calculator uses the latest imported completed transaction date as
+the end of its spending history window. It takes completed Expense and
+Refund transactions in the 90 calendar days ending on that date, excludes
+rows whose Nature is incidental, totals their expense metric and divides
+by 90.
+
+  Average daily spending = 90-day normal spending / 90
+
+  Estimated spending until payday =
+      average daily spending * days until next salary
+
+  Estimated safe savings =
+      current entered balances
+      + other income before payday
+      - estimated spending until payday
+      - known payments before payday
+      - minimum reserve
+
+The number of days is calculated from today's date to the manually entered
+next salary date. If the salary date is today or in the past, days are
+clamped to zero.
+
+This is a planning estimate, not a bank balance or guarantee. The
+calculation does not automatically detect next salary, future recurring
+payments, card authorisations or actual account balances.
+
+The spending-rate denominator is always 90 days. The app does not verify
+that the imported data covers the full 90-day window. If the import history
+is shorter, the observed spending can be divided by 90 anyway and the
+daily average can be understated.
+
+The calculator excludes only Nature incidental. Nature annual and limited
+do not currently receive separate forecast treatment.
+
+
+13. SETTINGS, BACKUP, RESTORE AND DELETION
+-----------------------------------------
+
+JSON Backup contains:
+
+  - All locally stored transactions.
+  - Transaction manual overrides (inside each transaction).
+  - Custom rules.
+  - Merchant-category assignments.
+  - Incidental detection settings.
+  - Forward forecast inputs.
+
+The backup is created locally by the browser and downloaded as a JSON
+file. Keep it private because it includes transaction descriptions,
+account names, amounts and balances.
+
+Restore offers two transaction choices:
+
+  OK      Replace local transactions with the backup transactions.
+  Cancel  Merge backup transactions with existing local transactions,
+          skipping IDs already present.
+
+Important: in both cases, the settings object is loaded from the backup.
+Thus the backup's rules, merchant categories, incidental settings and
+forecast inputs replace the current settings even when the transaction
+choice is Merge.
+
+Clear local data deletes all stored transactions and resets all settings
+to their defaults. This action is destructive. Export a backup first if
+the data must be retained.
+
+The application does not automatically back up data to GitHub. The GitHub
+repository contains the application source and this documentation only.
+
+
+14. IMPORTANT LIMITATIONS AND CHECKS BEFORE TRUSTING TOTALS
+-----------------------------------------------------------
+
+1. Currency handling
+   Ordinary income, expense, merchant and comparison calculations do not
+   convert or filter non-EUR currencies, even though Currency is stored.
+   The dashboard formats numbers as EUR. Mixed-currency imports can make
+   financial totals wrong.
+
+2. Description-based classification
+   Built-in categories, internal transfers, investments, salary and
+   benefits are matched by text fragments. A description change or a
+   coincidental substring can cause a missed or false match.
+
+3. Unknown incoming payments
+   Unrecognised incoming transfers/top-ups remain Needs review and are
+   excluded from income until classified. They are not silently counted
+   as salary or other income.
+
+4. Merchant grouping
+   Merchant keys are heuristically derived from Description. Similar
+   merchants can be merged, and the same merchant can appear in multiple
+   groups if its description varies.
+
+5. Rule direction condition
+   The rule's Expenses only / Income only condition checks the built-in
+   base treatment, not a treatment changed by an earlier custom rule.
+
+6. One-time / incidental detection
+   This is a frequency-and-value heuristic, not a semantic understanding
+   of the purchase. It suggests candidates; it does not mark them until
+   the user clicks the action.
+
+7. Incidental effect
+   Marking Nature incidental does not remove an expense from overview,
+   comparison or merchant totals. Its implemented financial effect is to
+   suppress the candidate and exclude it from the forecast's recent
+   normal-spending rate.
+
+8. Project scope
+   Project totals currently cover all imported completed history, not
+   only the selected date range.
+
+9. Balance-history coverage
+   A balance snapshot being present does not prove the whole statement
+   history is complete. The reconstruction cannot detect every missing
+   middle period or stale snapshot.
+
+10. Investments
+    Recognised investment transactions are treated as contribution flows.
+    The app does not import broker holdings, market value, dividends,
+    unrealised gains or investment returns.
+
+11. Internal transfers
+    Known phrases are excluded from normal cash-flow metrics. Unknown
+    transfers need review. A transfer that is not recognised can make
+    savings potential differ substantially from actual cash movement.
+
+12. Duplicate revisions
+    De-duplication is based on a fingerprint of all imported source fields.
+    A changed row can be added as a new record rather than replacing an
+    older version.
+
+13. Manual edits
+    Manual overrides have the highest classification priority. An
+    incorrect manual treatment can affect many totals until it is cleared.
+
+14. CSV export
+    The filtered transaction CSV is not a full data backup and does not
+    retain the Balance field required for historical balance analysis.
+
+15. Import completeness
+    The app adds rows; it does not verify that every expected month,
+    account, currency or Revolut Product has been imported.
+
+RECOMMENDED REVIEW WORKFLOW
+---------------------------
+
+Before relying on financial totals:
+
+  1. Import all available CSV files for both accounts.
+  2. Check the latest transaction date and the imported date coverage.
+  3. Review Transactions filtered to Needs review.
+  4. Inspect unknown positive transfers and top-ups before treating them
+     as income.
+  5. Check automatic merchant categories, especially
+     Other / unclassified.
+  6. Add a custom rule only when its text and conditions are specific
+     enough to match the intended transactions.
+  7. Use a manual override for an isolated transaction.
+  8. Review incidental suggestions before marking them.
+  9. In historical savings, verify the Balance coverage labels and
+     imported date range for each account and Product.
+ 10. Compare savings potential with actual cash retained and investigate
+     large Other movement values.
+ 11. Export a JSON backup before clearing browser data or restoring
+     another backup.
+
+This guide describes the current implementation. If the code changes,
+the calculations and assumptions in this document should be reviewed
+and updated alongside the code.
