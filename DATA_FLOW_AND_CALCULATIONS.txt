@@ -815,7 +815,9 @@ The current-year candidate scan includes rows that:
 
   - Have Treatment Expense or Refund.
   - Have a negative cash effect (cash outflow).
-  - Are not already marked Nature incidental.
+  - Are not assigned Fixed / recurring, Annual, Incidental or Limited
+    recurring Nature.
+  - Do not have a Project label.
 
 Rows are grouped by:
   Account + normalised merchant key.
@@ -847,8 +849,9 @@ table displays up to 50 suggestions.
 
 A single matching historical transaction is labelled "Possible one-time".
 Other qualifying groups are labelled "Limited / occasional". The all-history
-frequency set also includes previously marked incidental transactions; only
-the current-year candidate group skips rows already marked incidental.
+frequency set also skips rows assigned Fixed / recurring, Annual, Incidental
+or Limited recurring Nature, and rows with a Project label. This prevents
+already classified spending from being re-suggested as an incidental.
 
 This is a frequency-and-value heuristic. It does not understand the
 purchase purpose or prove that a purchase will never recur. For example,
@@ -1393,8 +1396,11 @@ that the imported data covers the full 90-day window. If the import history
 is shorter, the observed spending can be divided by 90 anyway and the
 daily average can be understated.
 
-The calculator excludes only Nature incidental. Nature annual and limited
-do not currently receive separate forecast treatment.
+The 90-day rate now uses Normal household spending: it excludes Incidental,
+Limited recurring and Project-tagged expenses, and includes Annual costs
+using their monthly allocation. The rate is still based on the latest
+90 calendar days and the import history must cover that full window for a
+reliable daily average.
 
 
 13. SETTINGS, BACKUP, RESTORE AND DELETION
