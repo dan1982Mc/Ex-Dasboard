@@ -13,7 +13,7 @@ const money=v=>MONEY.format(Number(v)||0);
 const fmt=v=>NUMBER.format(Number(v)||0);
 const signedMoney=v=>(v>0?'+':'')+money(v);
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-const parseRuleTerms=value=>[...new Set(String(value??'').split(/[\\n,;]+/).map(term=>norm(term.trim().replace(/^["']|["']$/g,'')).trim()).filter(Boolean))];
+const parseRuleTerms=value=>[...new Set(String(value??'').split(/[\n,;]+/).map(term=>norm(term.trim().replace(/^["']|["']$/g,'')).trim()).filter(Boolean))];
 const parseNum=v=>{let s=String(v??'').trim();if(!s)return 0;const negative=/^\(.*\)$/.test(s)||s.includes('-');s=s.replace(/[()\s\u00a0]/g,'').replace(/[^0-9.,]/g,'');if(!/\d/.test(s))return 0;const comma=s.lastIndexOf(','),dot=s.lastIndexOf('.');let decimal='';if(comma>=0&&dot>=0)decimal=comma>dot?',':'.';else if(comma>=0||dot>=0){const sep=comma>=0?',':'.',parts=s.split(sep),tail=parts[parts.length-1];if(parts.length===2&&tail.length>0&&tail.length<=2)decimal=sep;else if(parts.length>2&&tail.length>0&&tail.length<=2)decimal=sep;}let normalized=s;if(decimal){const other=decimal===','?'.':',';normalized=normalized.split(other).join('');const at=normalized.lastIndexOf(decimal);normalized=normalized.slice(0,at).split(decimal).join('')+'.'+normalized.slice(at+1);}else normalized=normalized.replace(/[.,]/g,'');const n=Number(normalized);return Number.isFinite(n)?(negative?-Math.abs(n):n):0;};
 const parseBalanceValue=v=>{const s=String(v??'').trim();return s&&/\d/.test(s)?parseNum(s):null;};
 const todayISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};

@@ -59,7 +59,7 @@
 @media(max-width:480px){.overview-kpi-grid{grid-template-columns:1fr}}
 
 /* Rule builder · multiple match terms and live preview */
-.form-label textarea{width:100%;min-width:0;min-height:76px;resize:vertical;padding:9px 10px;border:1px solid #dce3ec;border-radius:8px;background:#fff;color:var(--ink);font:500 12px/1.45 inherit}
+.form-label textarea{width:100%;min-width:0;min-height:76px;resize:vertical;padding:9px 10px;border:1px solid #dce3ec;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:12px;font-weight:500;line-height:1.45}
 .form-label textarea:focus{outline:2px solid #cbdcff;border-color:#7ca0f2}
 .rule-field-help{display:block;color:var(--muted);font-size:9px;font-weight:400;line-height:1.4;letter-spacing:0;margin-top:-1px}
 .rule-preview{grid-column:1/-1;margin:5px 0 8px;padding:14px 15px;border:1px solid var(--line);border-radius:11px;background:#f8fafc;min-width:0}
