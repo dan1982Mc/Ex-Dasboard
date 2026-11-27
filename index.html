@@ -47,6 +47,7 @@
         <div class="period-picker shared-period-picker" data-period-picker>
           <span class="filter-caption">Period</span>
           <div class="period-presets">
+            <button type="button" class="period-button" data-period-preset="all">All</button>
             <button type="button" class="period-button" data-period-preset="this-month">This month</button>
             <button type="button" class="period-button" data-period-preset="previous-month">Previous month</button>
             <button type="button" class="period-button" data-period-preset="last-6-months">Last 6 months</button>
@@ -142,6 +143,7 @@
         <div class="period-picker shared-period-picker" data-period-picker>
           <span class="filter-caption">Period</span>
           <div class="period-presets">
+            <button type="button" class="period-button" data-period-preset="all">All</button>
             <button type="button" class="period-button" data-period-preset="this-month">This month</button>
             <button type="button" class="period-button" data-period-preset="previous-month">Previous month</button>
             <button type="button" class="period-button" data-period-preset="last-6-months">Last 6 months</button>
@@ -224,6 +226,7 @@
           <div class="period-picker shared-period-picker" data-period-picker>
           <span class="filter-caption">Period</span>
           <div class="period-presets">
+            <button type="button" class="period-button" data-period-preset="all">All</button>
             <button type="button" class="period-button" data-period-preset="this-month">This month</button>
             <button type="button" class="period-button" data-period-preset="previous-month">Previous month</button>
             <button type="button" class="period-button" data-period-preset="last-6-months">Last 6 months</button>
@@ -257,9 +260,10 @@
 
       <section class="page" id="page-transactions">
         <div class="page-intro"><div><div class="eyebrow">TRANSACTION REVIEW</div><h2>Find and correct transactions</h2><p class="muted">Search merchants, inspect classifications and override individual transactions. Imported rows are never altered in their original source fields.</p></div><button class="button button-secondary" id="exportCsvBtn">Export filtered CSV</button></div>
-        <div class="period-picker shared-period-picker" data-period-picker>
+        <div class="period-picker shared-period-picker" data-period-picker data-period-scope="transactions">
           <span class="filter-caption">Period</span>
           <div class="period-presets">
+            <button type="button" class="period-button" data-period-preset="all">All</button>
             <button type="button" class="period-button" data-period-preset="this-month">This month</button>
             <button type="button" class="period-button" data-period-preset="previous-month">Previous month</button>
             <button type="button" class="period-button" data-period-preset="last-6-months">Last 6 months</button>
