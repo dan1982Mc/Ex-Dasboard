@@ -166,9 +166,85 @@
   .detection-controls .button{grid-column:auto}
 }
 
-/* Rules form: group related conditions in aligned vertical columns */
-.rule-form{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
-.rule-form>.form-label{min-width:0}
-.rule-form>.rule-preview{max-height:250px;overflow-y:auto;overscroll-behavior:contain}
-@media(max-width:760px){.rule-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.rule-form{grid-template-columns:1fr}}
+/* Rules form: paired description fields span two rows on desktop */
+.rule-form{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-areas:
+    "rule-name account include"
+    "date-from amount-min include"
+    "date-to amount-max exclude"
+    "apply-to transaction-type exclude"
+    "category project treatment"
+    "nature . ."
+    "preview preview preview"
+    "actions actions actions";
+  align-items:stretch;
+  gap:12px 13px;
+}
+.rule-form>.form-label{min-width:0;margin-bottom:0}
+.rule-field-name{grid-area:rule-name}
+.rule-field-account{grid-area:account}
+.rule-field-include{grid-area:include}
+.rule-field-date-from{grid-area:date-from}
+.rule-field-amount-min{grid-area:amount-min}
+.rule-field-date-to{grid-area:date-to}
+.rule-field-amount-max{grid-area:amount-max}
+.rule-field-exclude{grid-area:exclude}
+.rule-field-apply-to{grid-area:apply-to}
+.rule-field-type{grid-area:transaction-type}
+.rule-field-category{grid-area:category}
+.rule-field-project{grid-area:project}
+.rule-field-treatment{grid-area:treatment}
+.rule-field-nature{grid-area:nature}
+.rule-form .rule-field-include textarea,
+.rule-form .rule-field-exclude textarea{flex:1;min-height:76px}
+.rule-form>.rule-preview{grid-area:preview;max-height:none;overflow:visible;overscroll-behavior:auto}
+.rule-form>.form-actions{grid-area:actions;grid-column:auto}
+.rule-preview-list{
+  margin-top:12px;
+  max-height:175px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  padding-right:5px;
+}
+@media(max-width:760px){
+  .rule-form{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-areas:
+      "rule-name account"
+      "date-from amount-min"
+      "date-to amount-max"
+      "apply-to transaction-type"
+      "include include"
+      "exclude exclude"
+      "category project"
+      "treatment nature"
+      "preview preview"
+      "actions actions";
+  }
+  .rule-form .rule-field-include textarea,
+  .rule-form .rule-field-exclude textarea{min-height:90px}
+}
+@media(max-width:520px){
+  .rule-form{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "rule-name"
+      "account"
+      "date-from"
+      "amount-min"
+      "date-to"
+      "amount-max"
+      "apply-to"
+      "transaction-type"
+      "include"
+      "exclude"
+      "category"
+      "project"
+      "treatment"
+      "nature"
+      "preview"
+      "actions";
+  }
+}
