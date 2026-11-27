@@ -153,7 +153,56 @@ function openEdit(id){const tx=transactions.find(t=>t.id===id);if(!tx)return;con
 async function saveEdit(clear){const id=$('editId').value,tx=transactions.find(t=>t.id===id);if(!tx)return;if(clear){delete tx.override;}else{const o={};if($('editCategory').value!=='auto')o.category=$('editCategory').value;if($('editProject').value.trim())o.project=$('editProject').value.trim();if($('editTreatment').value!=='auto')o.treatment=$('editTreatment').value;if($('editNature').value!=='auto')o.nature=$('editNature').value;tx.override=o;}await dbPut(tx);$('editDialog').close();renderAll();}
 function ruleFromForm(form,existing){const fd=new FormData(form);return {id:existing?.id||'',name:String(fd.get('name')||'').trim(),account:fd.get('account')||'all',contains:String(fd.get('contains')||'').trim(),excludeContains:String(fd.get('excludeContains')||'').trim(),type:fd.get('type')||'all',dateFrom:fd.get('dateFrom')||'',dateTo:fd.get('dateTo')||'',amountMin:fd.get('amountMin')||'',amountMax:fd.get('amountMax')||'',direction:fd.get('direction')||'all',category:String(fd.get('category')||'').trim(),project:String(fd.get('project')||'').trim(),treatment:fd.get('treatment')||'',nature:fd.get('nature')||'',enabled:existing?.enabled??true};}
 function ruleHasConditions(rule){return !!(rule.contains||rule.excludeContains||rule.dateFrom||rule.dateTo||(rule.account&&rule.account!=='all')||(rule.type&&rule.type!=='all')||rule.amountMin!==''||rule.amountMax!=='');}
-function renderRulePreview(){const box=$('rulePreview'),form=$('ruleForm');if(!box||!form)return;const rule=ruleFromForm(form,editingRuleId?settings.rules.find(r=>r.id===editingRuleId):null),allCompleted=transactions.filter(t=>t.state==='COMPLETED');if(!allCompleted.length){box.innerHTML='<div class="rule-preview-empty">Import completed transactions to preview this rule.</div>';return;}if(!ruleHasConditions(rule)){box.innerHTML='<div class="rule-preview-empty">Add at least one condition to preview matching transactions. With no inclusion terms, the other conditions can match any description.</div>';return;}const includeTerms=parseRuleTerms(rule.contains),excludeTerms=parseRuleTerms(rule.excludeContains),conditionMatches=allCompleted.filter(t=>ruleConditionsMatch(t,rule,baseClass(t))),includeMatches=conditionMatches.filter(t=>{const d=norm(t.description);return !includeTerms.length||includeTerms.some(term=>d.includes(term));}),excluded=includeMatches.filter(t=>{const d=norm(t.description);return excludeTerms.some(term=>d.includes(term));}),matched=includeMatches.filter(t=>{const d=norm(t.description);return !excludeTerms.some(term=>d.includes(term));}),gross=matched.reduce((sum,t)=>sum+Math.abs(Number(t.amount)||0),0),sample=matched;const rows=sample.map(t=>'<div class="rule-preview-row"><span>'+escapeHTML(t.date||'—')+'</span><span>'+escapeHTML(t.account||'')+'</span><strong title="'+escapeHTML(t.description||'')+'">'+escapeHTML(t.description||'—')+'</strong><span class="rule-preview-amount">'+money(Math.abs(Number(t.amount)||0))+'</span></div>').join('');box.innerHTML='<div class="rule-preview-heading"><div><strong>Matching preview</strong><span>Completed imported transactions · all accounts unless restricted above</span></div><span class="rule-preview-total">'+matched.length+' match'+(matched.length===1?'':'es')+'</span></div><div class="rule-preview-stats"><div><span>Matches</span><strong>'+matched.length+'</strong></div><div><span>Excluded by keywords</span><strong>'+excluded.length+'</strong></div><div><span>Gross matched value</span><strong>'+money(gross)+'</strong></div></div>'+(rows?'<div class="rule-preview-list"><div class="rule-preview-list-label">Matching transactions · '+sample.length+' total+'</div>'+rows+'</div>':'<div class="rule-preview-empty">No completed transactions currently match these conditions.</div>');}
+function renderRulePreview(){
+  const box=$('rulePreview'),form=$('ruleForm');
+  if(!box||!form)return;
+  const rule=ruleFromForm(form,editingRuleId?settings.rules.find(r=>r.id===editingRuleId):null);
+  const allCompleted=transactions.filter(t=>t.state==='COMPLETED');
+  if(!allCompleted.length){
+    box.innerHTML='<div class="rule-preview-empty">Import completed transactions to preview this rule.</div>';
+    return;
+  }
+  if(!ruleHasConditions(rule)){
+    box.innerHTML='<div class="rule-preview-empty">Add at least one condition to preview matching transactions. With no inclusion terms, the other conditions can match any description.</div>';
+    return;
+  }
+  const includeTerms=parseRuleTerms(rule.contains),excludeTerms=parseRuleTerms(rule.excludeContains);
+  const conditionMatches=allCompleted.filter(t=>ruleConditionsMatch(t,rule,baseClass(t)));
+  const includeMatches=conditionMatches.filter(t=>{
+    const d=norm(t.description);
+    return !includeTerms.length||includeTerms.some(term=>d.includes(term));
+  });
+  const excluded=includeMatches.filter(t=>{
+    const d=norm(t.description);
+    return excludeTerms.some(term=>d.includes(term));
+  });
+  const matched=includeMatches.filter(t=>{
+    const d=norm(t.description);
+    return !excludeTerms.some(term=>d.includes(term));
+  });
+  const gross=matched.reduce((sum,t)=>sum+Math.abs(Number(t.amount)||0),0);
+  const rowHeight=34;
+  box.innerHTML=
+    '<div class="rule-preview-heading"><div><strong>Matching preview</strong><span>Completed imported transactions · all accounts unless restricted above</span></div><span class="rule-preview-total">'+matched.length+' match'+(matched.length===1?'':'es')+'</span></div>'+
+    '<div class="rule-preview-stats"><div><span>Matches</span><strong>'+matched.length+'</strong></div><div><span>Excluded by keywords</span><strong>'+excluded.length+'</strong></div><div><span>Gross matched value</span><strong>'+money(gross)+'</strong></div></div>'+
+    (matched.length
+      ? '<div class="rule-preview-list"><div class="rule-preview-list-label">Matching transactions · '+matched.length+' total</div><div class="rule-preview-scroll" id="rulePreviewScroll"><div class="rule-preview-virtual" id="rulePreviewVirtual" style="height:'+matched.length*rowHeight+'px"></div></div></div>'
+      : '<div class="rule-preview-empty">No completed transactions currently match these conditions.</div>');
+  if(!matched.length)return;
+  const viewport=$('rulePreviewScroll'),virtual=$('rulePreviewVirtual');
+  if(!viewport||!virtual)return;
+  const buffer=4;
+  const renderVisibleRows=()=>{
+    const first=Math.max(0,Math.floor(viewport.scrollTop/rowHeight)-buffer);
+    const last=Math.min(matched.length,Math.ceil((viewport.scrollTop+viewport.clientHeight)/rowHeight)+buffer);
+    virtual.innerHTML=matched.slice(first,last).map((t,index)=>{
+      const top=(first+index)*rowHeight;
+      return '<div class="rule-preview-row" style="top:'+top+'px"><span>'+escapeHTML(t.date||'—')+'</span><span>'+escapeHTML(t.account||'')+'</span><strong title="'+escapeHTML(t.description||'')+'">'+escapeHTML(t.description||'—')+'</strong><span class="rule-preview-amount">'+money(Math.abs(Number(t.amount)||0))+'</span></div>';
+    }).join('');
+  };
+  viewport.addEventListener('scroll',renderVisibleRows,{passive:true});
+  renderVisibleRows();
+}
 function resetRuleEditor(){editingRuleId=null;$('ruleForm').reset();$('ruleFormEyebrow').textContent='NEW RULE';$('ruleFormTitle').textContent='Create an automatic rule';$('ruleSaveButton').textContent='Save rule';$('cancelRuleEdit').hidden=true;renderRulePreview();}
 function beginRuleEdit(id){const rule=settings.rules.find(r=>r.id===id);if(!rule)return;editingRuleId=id;const form=$('ruleForm');['name','account','contains','excludeContains','type','dateFrom','dateTo','amountMin','amountMax','direction','category','project','treatment','nature'].forEach(key=>{const field=form.elements.namedItem(key);if(field)field.value=rule[key]??'';});$('ruleFormEyebrow').textContent='MODIFY RULE';$('ruleFormTitle').textContent='Edit automatic rule';$('ruleSaveButton').textContent='Update rule';$('cancelRuleEdit').hidden=false;renderRulePreview();form.scrollIntoView({behavior:'smooth',block:'center'});}
 function saveRule(form){const existing=editingRuleId?settings.rules.find(r=>r.id===editingRuleId):null,rule=ruleFromForm(form,existing);if(!ruleHasConditions(rule)){alert('Add at least one condition: an inclusion or exclusion phrase, date range, account, transaction type or amount.');return;}if(!rule.category&&!rule.project&&!rule.treatment&&!rule.nature){alert('Set at least one output: category, project, treatment or expense nature.');return;}if(existing){const index=settings.rules.findIndex(r=>r.id===existing.id);rule.id=existing.id;settings.rules[index]=rule;}else{rule.id='r-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);settings.rules.push(rule);}saveSettings();resetRuleEditor();renderAll();}

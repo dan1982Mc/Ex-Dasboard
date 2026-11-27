@@ -248,3 +248,9 @@
       "actions";
   }
 }
+
+/* Render only visible matching rows while retaining scroll access to every match */
+.rule-preview-list{max-height:none;overflow:visible;padding-right:0}
+.rule-preview-scroll{max-height:170px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:5px}
+.rule-preview-virtual{position:relative;min-width:0}
+.rule-preview-virtual .rule-preview-row{position:absolute;left:0;right:0;height:34px;padding:0;min-width:0}
