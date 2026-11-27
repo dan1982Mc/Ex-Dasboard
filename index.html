@@ -198,14 +198,14 @@
           <div class="section-heading"><div><div class="eyebrow" id="ruleFormEyebrow">NEW RULE</div><h2 id="ruleFormTitle">Create an automatic rule</h2></div></div>
           <form id="ruleForm" class="rule-form">
             <label class="form-label">Rule name<input name="name" required placeholder="Summer holiday 2026"></label>
+            <label class="form-label">Date from<input name="dateFrom" type="date"></label>
+            <label class="form-label">Date to<input name="dateTo" type="date"></label>
             <label class="form-label">Account<select name="account"><option value="all">Both accounts</option><option value="Dan">Dan</option><option value="Anca">Anca</option></select></label>
+            <label class="form-label">Amount minimum (€)<input name="amountMin" type="number" min="0" step="0.01" placeholder="Optional"></label>
+            <label class="form-label">Amount maximum (€)<input name="amountMax" type="number" min="0" step="0.01" placeholder="Optional"></label>
             <label class="form-label">Include descriptions / merchants (match ANY)<textarea name="contains" rows="3" placeholder="Praxis, Gamma, IKEA"></textarea><small class="rule-field-help">Separate alternatives with commas, semicolons or new lines. Partial matches are case-insensitive.</small></label>
             <label class="form-label">Exclude descriptions / merchants (match NONE)<textarea name="excludeContains" rows="3" placeholder="Regular groceries, unrelated purchases"></textarea><small class="rule-field-help">A transaction matching any exclusion term will not be changed by this rule.</small></label>
             <label class="form-label">Transaction type<select name="type"><option value="all">Any type</option><option>Card Payment</option><option>Card Refund</option><option>Transfer</option><option>Deposit</option><option>Topup</option><option>Fee</option><option>Exchange</option></select></label>
-            <label class="form-label">Date from<input name="dateFrom" type="date"></label>
-            <label class="form-label">Date to<input name="dateTo" type="date"></label>
-            <label class="form-label">Amount minimum (€)<input name="amountMin" type="number" min="0" step="0.01" placeholder="Optional"></label>
-            <label class="form-label">Amount maximum (€)<input name="amountMax" type="number" min="0" step="0.01" placeholder="Optional"></label>
             <label class="form-label">Apply to<select name="direction"><option value="all">All matching transactions</option><option value="expense">Expenses and refunds only</option><option value="income">Income only</option></select></label>
             <label class="form-label">Set category<input name="category" list="categoryOptions" placeholder="Leave blank to keep current category"></label>
             <label class="form-label">Set project / event<input name="project" placeholder="e.g. Summer holiday 2026"></label>
