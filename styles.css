@@ -146,9 +146,9 @@
 .selected-project-panel .project-transactions-scroll{max-height:420px}
 .detection-settings-panel{width:100%;margin-bottom:14px}
 .detection-settings-panel>p{margin:8px 0 0}
-.detection-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:14px;align-items:end;margin-top:12px}
-.detection-controls .form-label{margin-bottom:0;min-width:0;width:100%}
-.detection-controls .form-label input{display:block;width:100%;min-width:0}
+.detection-controls{display:grid;grid-template-columns:max-content max-content auto;gap:14px;align-items:end;margin-top:12px}
+.detection-controls .form-label{margin-bottom:0;min-width:0;width:max-content;max-width:100%}
+.detection-controls .form-label input{display:block;width:22ch;max-width:100%;min-width:0}
 .detection-controls .button{white-space:nowrap;margin-bottom:0}
 @media(max-width:900px){
   .project-layout{grid-template-columns:minmax(0,1fr)}
