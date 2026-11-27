@@ -171,7 +171,12 @@
       <section class="page" id="page-projects">
         <div class="page-intro"><div><div class="eyebrow">EXCEPTIONAL SPENDING</div><h2>Projects & incidental expenses</h2><p class="muted">Projects group exceptional spending across merchants. Project-tagged, incidental and limited recurring expenses roll into Incidental & Projects in actual spending and are excluded from Normal household spending.</p></div></div>
         <div class="content-grid">
-          <article class="panel wide"><div class="section-heading"><div><div class="eyebrow">PROJECTS</div><h2>Spending by project</h2></div><button class="button button-secondary" data-goto="rules">Create a project rule</button></div><div id="projectSummary" class="project-grid"><div class="empty-state">Add a project label through a rule or transaction override.</div></div></article>
+          <article class="panel wide"><div class="section-heading"><div><div class="eyebrow">PROJECTS</div><h2>Spending by project</h2></div><button class="button button-secondary" data-goto="rules">Create a project rule</button></div><div id="projectSummary" class="project-grid"><div class="empty-state">Add a project label through a rule or transaction override.</div></div>
+            <div class="project-transactions-panel">
+              <div class="section-heading"><div><div class="eyebrow">SELECTED PROJECT</div><h2 id="projectTransactionsTitle">Project transactions</h2></div><span id="projectTransactionMeta" class="muted small">Select a project above to see its transactions</span></div>
+              <div id="projectTransactions" class="project-transactions-scroll"><div class="empty-state">Select a project to view its transactions.</div></div>
+            </div>
+          </article>
           <article class="panel"><div class="eyebrow">DETECTION SETTINGS</div><h2>Incidental candidates</h2><p class="muted small">Suggestions use merchant frequency and value. Marked incidental, limited recurring and project-tagged transactions are grouped as Incidental & Projects and excluded from Normal household spending. They remain included in Actual spending.</p>
             <label class="form-label">Maximum transactions per merchant / year<input type="number" id="incidentalMax" min="1" max="12" value="2"></label>
             <label class="form-label">Minimum total amount (€)<input type="number" id="incidentalMin" min="0" step="5" value="75"></label>
