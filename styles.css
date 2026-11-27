@@ -102,3 +102,10 @@
 #transactionTable td:nth-child(4){text-align:center}
 #transactionTable .amount-expense{color:var(--red)}
 #transactionTable .amount-income{color:var(--green)}
+
+/* Transaction amount total and pagination placement */
+#transactionTable th.amount-heading{text-align:center;vertical-align:bottom}
+#transactionTable th.amount-heading .amount-header-total{font-size:10px;font-weight:800;letter-spacing:inherit;line-height:1.35;text-align:center;white-space:nowrap;margin:0 0 5px}
+#transactionTable th.amount-heading .sort-header{justify-content:center;text-align:center;width:100%}
+.transaction-pagination{display:flex;align-items:center;gap:8px}
+.transaction-pagination #transactionPageCounter{font-weight:700;white-space:nowrap}
