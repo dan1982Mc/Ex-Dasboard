@@ -96,3 +96,9 @@
 @media(max-width:1180px){.overview-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.spending-group-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.overview-kpi-grid{grid-template-columns:1fr}.spending-group-grid{grid-template-columns:1fr}.spending-breakdown-panel{padding:15px}}
+
+/* Transactions table alignment and semantic amount colours */
+#transactionTable th:nth-child(4) .sort-header{justify-content:center;text-align:center;width:100%}
+#transactionTable td:nth-child(4){text-align:center}
+#transactionTable .amount-expense{color:var(--red)}
+#transactionTable .amount-income{color:var(--green)}
