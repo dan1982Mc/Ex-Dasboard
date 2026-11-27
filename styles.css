@@ -112,3 +112,21 @@
 #transactionTable{table-layout:fixed;min-width:1000px}
 #transactionTable th:nth-child(4) .sort-header{justify-content:center;text-align:center;width:100%}
 #transactionTable td:nth-child(4){text-align:center}
+
+/* Selectable projects and contained project/transaction scrolling */
+.project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px;max-height:370px;overflow-y:auto;overflow-x:hidden;padding:2px 7px 7px 0;align-content:start}
+.project-card{display:block;width:100%;min-width:0;appearance:none;background:#fff;color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+.project-card:hover{border-color:#9bb3e9;background:#fbfcff}
+.project-card.selected{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 1px rgba(41,94,214,.12)}
+.project-card:focus-visible{outline:2px solid #7ca0f2;outline-offset:2px}
+.project-transactions-panel{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:11px;background:#fbfcfe;min-width:0}
+.project-transactions-panel .section-heading{align-items:flex-start;margin-bottom:10px}
+.project-transactions-panel .section-heading h2{overflow-wrap:anywhere}
+.project-transactions-scroll{max-height:330px;overflow-y:auto;overflow-x:auto;border:1px solid #e9edf3;border-radius:8px;background:#fff}
+.project-transactions-table{width:100%;min-width:600px;white-space:normal}
+.project-transactions-table thead th{position:sticky;top:0;z-index:1;background:#f8fafc}
+.project-transactions-table td{font-size:10px;padding:9px 10px}
+.project-transactions-table td.desc-cell{min-width:180px;max-width:330px}
+.project-transactions-table .num{white-space:nowrap}
+@media(max-width:900px){.project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.project-grid{grid-template-columns:1fr;max-height:320px}.project-transactions-panel{padding:11px}.project-transactions-panel .section-heading{flex-direction:column;align-items:flex-start}}
