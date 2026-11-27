@@ -103,9 +103,12 @@
 #transactionTable .amount-expense{color:var(--red)}
 #transactionTable .amount-income{color:var(--green)}
 
-/* Transaction amount total and pagination placement */
-#transactionTable th.amount-heading{text-align:center;vertical-align:bottom}
-#transactionTable th.amount-heading .amount-header-total{font-size:10px;font-weight:800;letter-spacing:inherit;line-height:1.35;text-align:center;white-space:nowrap;margin:0 0 5px}
-#transactionTable th.amount-heading .sort-header{justify-content:center;text-align:center;width:100%}
-.transaction-pagination{display:flex;align-items:center;gap:8px}
+/* Transactions toolbar aligns with the table's column grid */
+.transaction-table-toolbar{display:grid;grid-template-columns:10% 8% 32% 12% 16% 16% 6%;align-items:center;min-width:1000px;width:100%;padding:8px 0}
+.transaction-table-toolbar #transactionCount{grid-column:1/4}
+.transaction-table-toolbar .transaction-amount-total{grid-column:4/5;justify-self:center;font-size:10px;font-weight:700;white-space:nowrap}
+.transaction-table-toolbar .transaction-pagination{grid-column:5/8;justify-self:end;display:flex;align-items:center;gap:8px}
 .transaction-pagination #transactionPageCounter{font-weight:700;white-space:nowrap}
+#transactionTable{table-layout:fixed;min-width:1000px}
+#transactionTable th:nth-child(4) .sort-header{justify-content:center;text-align:center;width:100%}
+#transactionTable td:nth-child(4){text-align:center}
