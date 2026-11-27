@@ -170,19 +170,25 @@
 
       <section class="page" id="page-projects">
         <div class="page-intro"><div><div class="eyebrow">EXCEPTIONAL SPENDING</div><h2>Projects & incidental expenses</h2><p class="muted">Projects group exceptional spending across merchants. Project-tagged, incidental and limited recurring expenses roll into Incidental & Projects in actual spending and are excluded from Normal household spending.</p></div></div>
-        <div class="content-grid">
-          <article class="panel wide"><div class="section-heading"><div><div class="eyebrow">PROJECTS</div><h2>Spending by project</h2></div><button class="button button-secondary" data-goto="rules">Create a project rule</button></div><div id="projectSummary" class="project-grid"><div class="empty-state">Add a project label through a rule or transaction override.</div></div>
-            <div class="project-transactions-panel">
-              <div class="section-heading"><div><div class="eyebrow">SELECTED PROJECT</div><h2 id="projectTransactionsTitle">Project transactions</h2></div><span id="projectTransactionMeta" class="muted small">Select a project above to see its transactions</span></div>
-              <div id="projectTransactions" class="project-transactions-scroll"><div class="empty-state">Select a project to view its transactions.</div></div>
-            </div>
+        <div class="project-layout">
+          <article class="panel project-browser-panel">
+            <div class="section-heading"><div><div class="eyebrow">PROJECTS</div><h2>Spending by project</h2></div><button class="button button-secondary" data-goto="rules">Create a project rule</button></div>
+            <div id="projectSummary" class="project-grid"><div class="empty-state">Add a project label through a rule or transaction override.</div></div>
           </article>
-          <article class="panel"><div class="eyebrow">DETECTION SETTINGS</div><h2>Incidental candidates</h2><p class="muted small">Suggestions use merchant frequency and value. Marked incidental, limited recurring and project-tagged transactions are grouped as Incidental & Projects and excluded from Normal household spending. They remain included in Actual spending.</p>
+          <article class="panel selected-project-panel">
+            <div class="section-heading"><div><div class="eyebrow">SELECTED PROJECT</div><h2 id="projectTransactionsTitle">Project transactions</h2></div><span id="projectTransactionMeta" class="muted small">Select a project above to see its transactions</span></div>
+            <div id="projectTransactions" class="project-transactions-scroll"><div class="empty-state">Select a project to view its transactions.</div></div>
+          </article>
+        </div>
+        <article class="panel detection-settings-panel">
+          <div class="section-heading"><div><div class="eyebrow">DETECTION SETTINGS</div><h2>Incidental candidates</h2></div></div>
+          <p class="muted small">Suggestions use merchant frequency and value. Marked incidental, limited recurring and project-tagged transactions are grouped as Incidental & Projects and excluded from Normal household spending. They remain included in Actual spending.</p>
+          <div class="detection-controls">
             <label class="form-label">Maximum transactions per merchant / year<input type="number" id="incidentalMax" min="1" max="12" value="2"></label>
             <label class="form-label">Minimum total amount (€)<input type="number" id="incidentalMin" min="0" step="5" value="75"></label>
             <button class="button button-secondary" id="saveIncidental">Update detection</button>
-          </article>
-        </div>
+          </div>
+        </article>
         <article class="panel"><div class="section-heading"><div><div class="eyebrow">SUGGESTIONS</div><h2>Possible one-time or limited expenses</h2></div><span class="muted small" id="incidentalPeriod"></span></div><div id="incidentalList" class="table-wrap"><div class="empty-state">Import transactions to detect incidental expenses.</div></div></article>
       </section>
 
