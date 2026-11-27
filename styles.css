@@ -165,3 +165,11 @@
   .detection-controls{grid-template-columns:1fr}
   .detection-controls .button{grid-column:auto}
 }
+
+/* Rules form: group related conditions in aligned vertical columns */
+.rule-form{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}
+.rule-form>.form-label{min-width:0}
+.rule-form>.rule-preview{max-height:250px;overflow-y:auto;overscroll-behavior:contain}
+.rule-preview-list{max-height:145px;overflow-y:auto;overflow-x:hidden;padding-right:5px}
+@media(max-width:760px){.rule-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.rule-form{grid-template-columns:1fr}}
