@@ -132,7 +132,7 @@
 @media(max-width:640px){.project-grid{grid-template-columns:1fr;max-height:320px}.project-transactions-panel{padding:11px}.project-transactions-panel .section-heading{flex-direction:column;align-items:flex-start}}
 
 /* Projects page: one-third project browser, two-thirds selected project */
-.project-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:14px;margin-bottom:14px;align-items:stretch}
+.project-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:14px;margin-bottom:14px;align-items:stretch}
 .project-layout>.panel{min-width:0}
 .project-browser-panel .section-heading,.selected-project-panel .section-heading{align-items:flex-start}
 .project-browser-panel .section-heading{flex-wrap:wrap}
@@ -146,8 +146,9 @@
 .selected-project-panel .project-transactions-scroll{max-height:420px}
 .detection-settings-panel{width:100%;margin-bottom:14px}
 .detection-settings-panel>p{margin:8px 0 0}
-.detection-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:end;margin-top:12px}
-.detection-controls .form-label{margin-bottom:0}
+.detection-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:14px;align-items:end;margin-top:12px}
+.detection-controls .form-label{margin-bottom:0;min-width:0;width:100%}
+.detection-controls .form-label input{display:block;width:100%;min-width:0}
 .detection-controls .button{white-space:nowrap;margin-bottom:0}
 @media(max-width:900px){
   .project-layout{grid-template-columns:minmax(0,1fr)}
