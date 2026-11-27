@@ -149,7 +149,7 @@
 .detection-controls{display:grid;grid-template-columns:max-content max-content auto;gap:14px;align-items:end;margin-top:12px}
 .detection-controls .form-label{margin-bottom:0;min-width:0;width:max-content;max-width:100%}
 .detection-controls .form-label input{display:block;width:22ch;max-width:100%;min-width:0}
-.detection-controls .button{white-space:nowrap;margin-bottom:0}
+.detection-controls .button{white-space:nowrap;margin-bottom:0;width:22ch;justify-self:end}
 @media(max-width:900px){
   .project-layout{grid-template-columns:minmax(0,1fr)}
   .project-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -158,7 +158,7 @@
 @media(max-width:640px){
   .project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .detection-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .detection-controls .button{grid-column:1/-1;justify-self:start}
+  .detection-controls .button{grid-column:1/-1;justify-self:end}
 }
 @media(max-width:420px){
   .project-grid{grid-template-columns:1fr}
